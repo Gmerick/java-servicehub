@@ -27,7 +27,7 @@ test("percurso completo: cliente, equipamento, orçamento, aprovação e entrega
     .getByRole("button", { name: "Novo equipamento", exact: false })
     .click();
   await page
-    .getByLabel("Cliente", { exact: true })
+    .getByRole("combobox", { name: "Cliente", exact: true })
     .selectOption({ label: "Cliente Navegador" });
   await page.getByLabel("Equipamento", { exact: true }).fill("Notebook teste");
   await page.getByLabel("Número de série", { exact: true }).fill("UI-NB-01");
