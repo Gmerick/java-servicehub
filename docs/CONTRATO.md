@@ -1,5 +1,5 @@
 # Contrato — ServiceHub 1.0
-Estado: EM_EXECUCAO. Novo repositório; publicação pública autorizada pelo usuário.
+Estado: CONCLUIDA. Código publicado, CI aprovada e distribuição gerada. Evidências em `VALIDACAO.md`.
 
 Aplicação local de portfólio Java Júnior, maior que os três projetos anteriores. Sem dados reais, serviços pagos ou implantação em produção.
 

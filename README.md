@@ -4,7 +4,9 @@
 
 Aplicação de portfólio em **Java 17 + Spring Boot**, com interface web em português, banco persistente e fluxo de ordens de serviço. Organiza clientes, equipamentos, orçamento, execução e estoque em uma aplicação local.
 
-Capturas desktop e celular são geradas pelos testes de interface e ficam disponíveis no artefato `evidencias` da CI.
+![Painel ServiceHub](docs/screenshots/desktop.png)
+
+[Ver a interface no celular](docs/screenshots/mobile.png). Capturas reais geradas pelos testes de navegador.
 
 ## O que é possível fazer
 
