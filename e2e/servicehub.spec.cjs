@@ -135,7 +135,7 @@ test("erro de rede oferece recuperação", async ({ page }) => {
   await page.unroute("**/api/dashboard");
   await page.getByRole("button", { name: "Tentar novamente" }).click();
   await expect(
-    page.getByRole("heading", { name: "Cada serviço, sob controle." }),
+    page.getByRole("heading", { name: "Vamos ao próximo serviço." }),
   ).toBeVisible();
 });
 test("CSV faz download e estoque permite reposição", async ({ page }) => {
@@ -163,16 +163,18 @@ test("desktop e celular: navegação, modal e evidência visual", async ({
 }) => {
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: "Cada serviço, sob controle." }),
+    page.getByRole("heading", { name: "Vamos ao próximo serviço." }),
   ).toBeVisible();
   await page.screenshot({
     path: "docs/screenshots/desktop.png",
     fullPage: true,
+    animations: 'disabled',
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({
     path: "docs/screenshots/mobile.png",
     fullPage: true,
+    animations: 'disabled',
   });
   expect(
     await page.evaluate(
@@ -202,4 +204,16 @@ test("conteúdo digitado permanece texto, sem executar HTML", async ({
     page.getByText("<img src=x onerror=alert(1)>", { exact: true }),
   ).toBeVisible();
   expect(await page.locator("td img").count()).toBe(0);
+});
+
+ test("atalhos da bancada e preferência por movimento reduzido", async ({page}) => {
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('/');
+ await expect(page.getByRole('heading',{name:'Vamos ao próximo serviço.'})).toBeVisible();
+ expect(await page.locator('.signal-core').evaluate(el=>getComputedStyle(el).animationName)).toBe('none');
+ await page.locator('.shortcuts').getByRole('button',{name:/Novo cliente/}).click();
+ await expect(page.getByRole('dialog')).toBeVisible();
+ await page.getByRole('button',{name:'Fechar',exact:true}).click();
+ await page.locator('.stock-panel').getByRole('button',{name:/Conferir estoque/}).click();
+ await expect(page.getByRole('heading',{name:'Peças e estoque',exact:true})).toBeVisible();
 });

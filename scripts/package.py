@@ -7,7 +7,7 @@ if not jar.exists():
     raise SystemExit('Execute mvn clean verify primeiro.')
 out = root / 'dist'
 out.mkdir(exist_ok=True)
-archive = out / 'ServiceHub-1.0.0.zip'
+archive = out / 'ServiceHub-1.1.0.zip'
 with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as z:
     for source, destination in [(jar, 'app.jar'), (root/'scripts/INICIAR.cmd','INICIAR.cmd'),(root/'README.md','README.md'),(root/'docs/COMO-USAR.md','COMO-USAR.md'),(root/'LICENSE','LICENSE')]:
         z.write(source, 'ServiceHub/'+destination)

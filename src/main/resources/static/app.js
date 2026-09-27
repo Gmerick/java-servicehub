@@ -84,7 +84,7 @@ function error(text) {
   }
 }
 const heading = (title, sub, action = "") =>
-  `<div class="page-heading"><div><span class="eyebrow">OPERAÇÃO ORGANIZADA</span><h1>${title}</h1><p>${sub}</p></div>${action}</div>`;
+  `<div class="page-heading"><div><span class="eyebrow">SERVICEHUB / BANCADA</span><h1>${title}</h1><p>${sub}</p></div>${action}</div>`;
 const createButton = (type, title) =>
   `<button class="primary" data-new="${type}">＋ ${title}</button>`;
 const table = (headers, rows) =>
@@ -112,18 +112,22 @@ async function render() {
     .querySelectorAll("[data-view]")
     .forEach((b) => b.classList.toggle("active", b.dataset.view === view));
   $("#page").innerHTML =
-    '<div class="loading" role="status">Carregando seu workspace…</div>';
+    '<div class="loading" role="status">Organizando a bancada…</div>';
   try {
     let html = "";
     if (view === "dashboard") {
       const d = await api("/dashboard");
-      html =
-        heading(
-          "Cada serviço, sob controle.",
-          "Acompanhe sua operação, do primeiro diagnóstico à entrega.",
-          createButton("order", "Nova ordem"),
-        ) +
-        `<section class="hero"><div><span class="eyebrow">DO ORÇAMENTO À ENTREGA</span><h2>Uma operação conectada.</h2><p>Clientes, equipamentos e peças reunidos no mesmo fluxo. Comece pelo orçamento e acompanhe cada etapa.</p></div><span class="hero-stamp">✓ Histórico em cada ordem</span></section><section class="metrics" aria-label="Indicadores"><article class="metric"><div class="metric-label">Ordens em aberto <i>↗</i></div><b>${d.open}</b><small>Rascunhos e serviços ativos</small></article><article class="metric"><div class="metric-label">Prazo vencido <i>◷</i></div><b>${d.overdue}</b><small>Priorize estes atendimentos</small></article><article class="metric"><div class="metric-label">Serviços concluídos <i>✓</i></div><b>${d.completed}</b><small>Total de ordens entregues</small></article><article class="metric"><div class="metric-label">Valor concluído <i>◇</i></div><b class="money">${money(d.completedValue)}</b><small>Orçamentos concluídos · não é caixa</small></article></section><div class="grid-main"><section class="card"><div class="card-head"><div><h2>Últimas ordens</h2><small>Os atendimentos mais recentes</small></div><button class="text-button" data-view="orders">Ver todas →</button></div>${table(["Ordem", "Atendimento", "Status", "Orçamento", ""], orderRows(d.recent))}</section><aside class="side-cards"><section class="card"><div class="card-head"><h2>Seu próximo passo</h2></div><div class="card-body"><div class="quick-step"><span class="step-num">01</span><div><b>Organize a entrada</b><p>Cadastre o cliente e vincule seu equipamento.</p></div></div><div class="quick-step"><span class="step-num">02</span><div><b>Monte o orçamento</b><p>Adicione serviços e peças à ordem.</p></div></div><div class="quick-step"><span class="step-num">03</span><div><b>Aprove e execute</b><p>A aprovação retira as peças do estoque.</p></div></div><button class="text-button" data-view="guide">Conhecer o fluxo →</button></div></section><section class="stock-note"><b>◎ Atenção ao estoque</b><p>${d.lowStock} peça(s) no mínimo ou abaixo dele.</p><button class="text-button" data-view="parts">Conferir peças →</button></section></aside></div>`;
+      html = `<div class="desk-heading"><div><span class="eyebrow">SUA BANCADA / VISÃO GERAL</span><h1>Vamos ao próximo serviço.</h1><p>Retome um atendimento ou abra espaço para o próximo.</p></div>${createButton("order", "Nova ordem")}</div>
+        <div class="desk-layout">
+          <section class="work-surface">
+            <div class="live-overview"><div><span class="eyebrow">EM ABERTO</span><div class="open-count">${d.open}<span>ordem${d.open === 1 ? "" : "s"}<br>na bancada</span></div></div><div class="signal-art" aria-hidden="true"><span class="signal-ring ring-one"></span><span class="signal-ring ring-two"></span><span class="signal-core">sh<span> / </span></span><i class="signal-dot"></i></div><div class="deadline-note"><span class="status-dot"></span><b>${d.overdue ? `${d.overdue} prazo(s) vencido(s)` : "Prazos em dia"}</b><small>${d.overdue ? "Confira as ordens abertas antes de continuar." : "Nenhuma ordem aberta está atrasada."}</small></div></div>
+            <div class="section-heading"><div><span class="eyebrow">01 / ATENDIMENTOS</span><h2>O trabalho continua aqui.</h2></div><button class="text-button" data-view="orders">Todas as ordens <span aria-hidden="true">↗</span></button></div>
+            <div class="recent-list">${d.recent.map((o) => `<button class="service-row" data-order="${o.id}" aria-label="Abrir ordem ${o.id}"><span class="order-index">${String(o.id).padStart(3, "0")}</span><span class="service-info"><strong>${esc(o.title)}</strong><small>${esc(o.customerName)} <span>· ${esc(o.assetName)}</span></small></span>${badge(o.status)}<span class="row-value">${money(o.total)}</span><span class="row-arrow" aria-hidden="true">↗</span></button>`).join("") || '<div class="empty">Sua bancada está livre. Abra a primeira ordem para começar.</div>'}</div>
+            <div class="desk-summary"><div><span class="summary-number">${d.completed}</span><span>serviços<br>concluídos</span></div><div><span class="summary-money">${money(d.completedValue)}</span><span>em orçamentos concluídos<small>Não representa recebimentos.</small></span></div></div>
+          </section>
+          <aside class="desk-rail"><section class="stock-panel"><div class="rail-caption"><span class="eyebrow">02 / ESTOQUE</span><span aria-hidden="true">↗</span></div><div class="stock-number">${String(d.lowStock).padStart(2, "0")}<span>peça(s) para<br>acompanhar</span></div><p>${d.lowStock ? "Itens no estoque mínimo ou abaixo dele. Confira antes de aprovar um orçamento." : "As peças estão acima do mínimo. Você pode consultar o saldo no catálogo."}</p><button class="secondary" data-view="parts">Conferir estoque <span aria-hidden="true">→</span></button><div class="stock-track" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></section>
+          <section class="shortcuts"><span class="eyebrow">ATALHOS DA BANCADA</span><button data-new="customer"><span>Novo cliente<small>O primeiro contato</small></span><span aria-hidden="true">＋</span></button><button data-new="asset"><span>Novo equipamento<small>Vincular ao cliente</small></span><span aria-hidden="true">＋</span></button><button data-view="guide"><span>Como funciona<small>Da entrada à entrega</small></span><span aria-hidden="true">↗</span></button></section><p class="rail-footnote"><span class="status-dot"></span>Salvo no seu computador.<br><span>Seu ritmo. Seu espaço de trabalho.</span></p></aside>
+        </div>`;
     } else if (view === "orders") {
       const d = await api(
         `/orders?page=${currentPage}&size=10&search=${encodeURIComponent(search)}${status ? "&status=" + status : ""}`,

@@ -29,7 +29,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run test:ui
       - run: python scripts/package.py
-      - name: Criar release 1.0.0 validada
+      - name: Criar release 1.1.0 validada
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create v1.0.0 dist/* --target "$GITHUB_SHA" --title "ServiceHub 1.0.0" --notes-file docs/RELEASE.md
+        run: gh release create v1.1.0 dist/* --target "$GITHUB_SHA" --title "ServiceHub 1.1.0" --notes-file docs/RELEASE.md

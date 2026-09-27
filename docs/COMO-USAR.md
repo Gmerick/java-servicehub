@@ -74,3 +74,9 @@ Também é possível usar argumentos Spring, por exemplo `--server.port=8084`. N
 - **Maven não baixa dependências:** confira a conexão/proxy e repita a compilação. A primeira execução precisa de internet.
 
 O executável `.cmd` foi revisado, mas sua execução precisa ser confirmada em um PC Windows. O JAR, os fluxos e o pacote são validados no Linux.
+
+## Atualizar da versão 1.0 para a 1.1
+
+Pare o programa e copie a pasta `data` para backup. Extraia a nova distribuição em outra pasta e copie `data` para dentro da nova pasta `ServiceHub`, ao lado de `app.jar`. Inicie a nova versão. As regras e o banco são compatíveis; não execute as duas versões simultaneamente.
+
+A visão geral agora funciona como uma bancada: atendimentos recentes à esquerda e estoque/atalhos à direita. No celular, os blocos seguem uma coluna e a navegação pode ser deslizada horizontalmente. Ative “reduzir movimento” no sistema para desativar as animações.

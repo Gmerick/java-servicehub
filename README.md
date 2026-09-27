@@ -33,7 +33,7 @@ java -jar target/app.jar
 
 Abra **http://localhost:8083**. O primeiro início cria dados de demonstração. Feche com `Ctrl+C`. No Windows, você também pode executar `INICIAR-DESENVOLVIMENTO.cmd` na pasta do projeto.
 
-**Pacote pronto:** em [Actions → CI](https://github.com/Gmerick/java-servicehub/actions/workflows/ci.yml), abra uma execução verde e baixe o artefato `ServiceHub-Windows` (requer login no GitHub). Extraia o artefato, depois `ServiceHub-1.0.0.zip`; abra a pasta `ServiceHub` e execute `INICIAR.cmd`. É necessário Java 17+ no PATH; Maven e Node não são necessários para esse pacote. As [Releases](https://github.com/Gmerick/java-servicehub/releases) permitem disponibilizar a mesma distribuição por uma execução manual validada.
+**Pacote pronto:** em [Actions → CI](https://github.com/Gmerick/java-servicehub/actions/workflows/ci.yml), abra uma execução verde e baixe o artefato `ServiceHub-Windows` (requer login no GitHub). Extraia o artefato, depois `ServiceHub-1.1.0.zip`; abra a pasta `ServiceHub` e execute `INICIAR.cmd`. É necessário Java 17+ no PATH; Maven e Node não são necessários para esse pacote. As [Releases](https://github.com/Gmerick/java-servicehub/releases) permitem disponibilizar a mesma distribuição por uma execução manual validada.
 
 ## Demonstração em 5 minutos
 
