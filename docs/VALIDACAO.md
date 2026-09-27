@@ -21,3 +21,7 @@ Correções encontradas durante a validação: acesso ao JDBC pelo proxy Spring,
 Scripts Windows revisados, sem execução nativa em Windows neste ambiente. Testes de navegador usam Chromium; não há certificação para Safari/Firefox. Não foi feita auditoria externa de segurança ou acessibilidade. A aplicação é local e não possui autenticação.
 
 Implementação, validação e autorrevisão realizadas pelo mesmo executor; não houve revisão independente.
+
+## Redesign 1.1 — 26/09/2026 (Brasil)
+
+[CI 36285523848](https://github.com/Gmerick/java-servicehub/actions/runs/36285523848), commit `18acc06d0fcc6b388812d50a35152141eac84fb3`: 14 testes Java, persistência, 8 cenários de navegador e pacote aprovados. As novas capturas desktop e celular foram inspecionadas. O cenário adicional verifica atalhos e a desativação de animações com `prefers-reduced-motion`. O desenho do banco e as regras da API não foram alterados.

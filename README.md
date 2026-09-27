@@ -80,3 +80,7 @@ scripts/                                  Inicialização e distribuição
 ```
 
 Licença MIT. Projeto desenvolvido com apoio de IA; o roteiro de estudo orienta a revisão do código e a explicação das decisões técnicas.
+
+## Visual 1.1
+
+Bancada com navegação horizontal, atendimentos em linhas abertas e estoque em uma coluna assimétrica. Azul gelo, lilás e ciano em superfícies leves; transições de tela e modal, respostas ao cursor e um detalhe orbital animado. A preferência de movimento reduzido do sistema desativa as animações. Veja as instruções de atualização preservando a pasta `data` em [Como usar](docs/COMO-USAR.md).
