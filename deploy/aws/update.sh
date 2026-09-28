@@ -17,12 +17,14 @@ if [[ -f /opt/servicehub/app.jar ]]; then
 fi
 mv -f /opt/servicehub/app.jar.next /opt/servicehub/app.jar
 systemctl start servicehub
-for attempt in {1..60}; do
-  if curl --fail --silent http://127.0.0.1:8083/api/health >/dev/null; then
-    echo 'ServiceHub saudável em 127.0.0.1:8083'; exit 0
-  fi
-  sleep 2
-done
+if timeout --signal=TERM --kill-after=2s 120s bash -c '
+  until curl --fail --silent --connect-timeout 2 --max-time 5 \
+    http://127.0.0.1:8083/api/health >/dev/null; do
+    sleep 2
+  done
+'; then
+  echo 'ServiceHub saudável em 127.0.0.1:8083'; exit 0
+fi
 systemctl stop servicehub
 echo 'Falha de saúde; serviço parado. Consulte journalctl -u servicehub. Restaure JAR e backup compatíveis; não reverta apenas o JAR após migração.' >&2
 exit 1
