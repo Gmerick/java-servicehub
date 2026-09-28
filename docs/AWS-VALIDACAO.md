@@ -73,6 +73,20 @@ Estado imediatamente anterior à restauração preservado em `/var/backups/servi
 ## Limitações registradas
 
 - Entrega dos alertas por e-mail não testada; orçamento não desliga recursos e contabilização pode atrasar.
-- `/api/health` informa versão fixa `1.0.0` já existente; Maven e log do JAR implantado identificam `1.1.0`. UP foi verificado, mas esse campo não comprova versão.
+- A limitação inicial de versão fixa no health foi corrigida na atualização documentada abaixo.
 - IPv4 público automático e IP de origem podem mudar; atualize os comandos e o /32 conforme necessário.
 - Nenhum merge na main, mudança de plano ou recurso fora do escopo realizado.
+
+
+## Atualização final: versão Maven e reconexão — 28/09/2026
+
+- Código aprovado: `4b9866b`. [CI manual 36497408914](https://github.com/Gmerick/java-servicehub/actions/runs/36497408914): success; 14 testes Java, versão HTTP igual ao metadado do JAR e ao POM, persistência após reinício, 8 testes de interface (17,5 s), sintaxe Bash e artefatos.
+- A primeira execução `36497268911` falhou no teste por procurar o metadado na pasta errada do JAR. Corrigido para `META-INF/build-info.properties`; teste local e nova CI aprovados. Nenhum artefato reprovado foi implantado.
+- Artefato ServiceHub-EC2 baixado da CI aprovada. SHA256 local, do manifesto e do JAR remoto iguais: `3a8ba544ec31ceb408405bef8a3b7ff05f1499d66f101330f9fd962e6bf662f8`.
+- Backup frio prévio: `/var/backups/servicehub/h2-20260928T232015-27267.tar.gz`; checksum conferido e cópia externa em `C:\Users\SUPORTE\Documents\ServiceHub-backups\health-update-backup.tar.gz`. SHA256 das duas cópias: `0803551af54e330647d882ad4583f79752d303fee3aa60a7efde0d1ddcd966c1`.
+- Atualização pelo `servicehub-update` existente, com backup adicional `/var/backups/servicehub/pre-update-20260928T232212-27495.tar.gz` e JAR anterior preservado. Sem alteração de infraestrutura ou plano.
+- Após atualização: health `{"status":"UP","version":"1.1.0"}` igual ao metadado extraído do artefato da CI; JAR remoto com hash correspondente; systemd active, User=servicehub e NoNewPrivileges=yes. Logs mostram inicialização normal em 6,3 s.
+- Comparação integral das respostas antes/depois: clientes, equipamentos, peças, lista de ordens, detalhe da OS 1 (incluindo itens/eventos) e movimentos da peça 1 idênticos. OS concluída e estoque 7 preservados. Nenhum dado fictício adicional criado nesta atualização.
+- Escuta novamente confirmada somente em loopback 8083; teste TCP público de 5 s não conectou. Regras de rede não foram alteradas.
+- `deploy/aws/open-tunnel.ps1` executado neste computador com LocalPort 18083: túnel abriu e respondeu ao health; usado também na comparação após atualização. Túnel original 8083 permanece disponível. Nenhuma chave privada incorporada ao script ou ao Git.
+- Reconexão documentada em AWS.md. Reinício físico do computador não executado. Entrega dos alertas de orçamento por e-mail segue não testada. CI apresenta avisos de depreciação das actions v4; não impediram os testes.

@@ -114,3 +114,23 @@ ssh -i C:\Users\SUPORTE\.ssh\servicehub-dev.pem -o UserKnownHostsFile=C:\Users\S
 Abra http://127.0.0.1:8083. Esse acesso foi validado no computador, inclusive com fluxo completo na EC2. A origem SSH autorizada é `201.74.182.206/32`; se mudar, ajuste somente essa regra no SG `sg-0a68721ee7dc69a9d`.
 
 O backup externo testado está em `C:\Users\SUPORTE\Documents\ServiceHub-backups\servicehub-backup-20260928.tar.gz`. O volume `vol-092b312ad13415b8a` é excluído ao encerrar a EC2; preserve a cópia externa e o JAR compatível. Com a instância parada, o EBS de 8 GiB continua custando aproximadamente US$ 0,64/mês antes de créditos; não há Elastic IP ou snapshot criado nesta implantação.
+
+## Reconectar com PowerShell
+
+Na raiz do repositório, execute:
+
+```powershell
+.\deploy\aws\open-tunnel.ps1
+```
+
+Mantenha o terminal aberto e acesse http://127.0.0.1:8083. Fechar o terminal, pressionar Ctrl+C ou reiniciar o computador encerra o túnel; execute novamente o mesmo comando para reconectar. A aplicação e os dados continuam na EC2. Se já houver um túnel em 8083, use o existente ou escolha outra porta:
+
+```powershell
+.\deploy\aws\open-tunnel.ps1 -Ec2Address '18.224.63.142' -KeyFile "$env:USERPROFILE\.ssh\servicehub-dev.pem" -KnownHostsFile "$env:USERPROFILE\.ssh\servicehub-dev-known_hosts" -LocalPort 18083
+```
+
+Nesse caso abra http://127.0.0.1:18083. O script exige host previamente verificado e não contém chave privada. Após mudança do IPv4 da EC2, informe o endereço novo e confira a chave do host no console antes de atualizar o arquivo known_hosts. Após mudança do IP público do computador, atualize a origem /32 do SSH. Não abra 8083 no security group.
+
+## Versão do artefato
+
+O Maven executa `spring-boot:build-info` e gera `META-INF/build-info.properties`. `/api/health` usa `BuildProperties`, sem versão fixa ou fallback. Ao iniciar pela IDE, execute antes `mvn generate-resources` para gerar esse metadado. A CI abre o JAR, compara `build.version` com a versão do POM e consulta a versão HTTP do próprio artefato durante o teste de persistência.
