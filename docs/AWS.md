@@ -4,13 +4,13 @@ Uma EC2, Java 17, H2 em arquivo e acesso por túnel SSH. Sem autenticação: **n
 
 ## Antes de provisionar
 
-Confira o plano, créditos, região habilitada e recursos existentes (instâncias, volumes, pares de chaves e security groups). Não execute novamente o assistente sem verificar uma criação anterior. A conta usada em 28/09/2026 bloqueou `us-east-1` pedindo ativação de recursos avançados; não ative nem migre o plano automaticamente. Uma região alternativa exige autorização.
+Confira o plano, créditos, região habilitada e recursos existentes (instâncias, volumes, pares de chaves e security groups). Não execute novamente o assistente sem verificar uma criação anterior. A conta usada em 28/09/2026 bloqueou `us-east-1` pedindo ativação de recursos avançados; não ative nem migre o plano automaticamente. O proprietário autorizou Ohio (`us-east-2`) em 28/09/2026; essa é a região efetiva.
 
 Configuração proposta: nome `servicehub-dev`, Amazon Linux 2023 oficial Amazon, x86_64, `t3.micro` On-Demand, CPU **Standard**, um EBS raiz `gp3` de **8 GiB criptografado**, 3000 IOPS e 125 MiB/s, sem monitoramento detalhado, sem Elastic IP, sem IAM instance profile. Exigir IMDSv2. Use VPC/subnet padrão com rota para internet, se já existir. Não crie RDS, NAT, balanceador ou Kubernetes.
 
 O único ingresso deve ser TCP 22 da rede pública **do computador do usuário**, `/32`. No console aberto nesse computador use “Meu IP”; não use o endereço de um runner ou CloudShell. Mudança de rede/VPN exige atualizar esse `/32`. Não use `0.0.0.0/0` nem `::/0` em regras de entrada. Egresso padrão permite instalar Java e atualizações; não expõe a aplicação. Guarde a chave privada fora do repositório, em diretório restrito ao usuário. Nunca crie chaves de acesso root.
 
-Estimativa de referência para `us-east-1`, 730 horas/mês, antes dos créditos: t3.micro Linux US$ 0,0104/h = US$ 7,592; IPv4 público US$ 0,005/h = US$ 3,65; gp3 8 × US$ 0,08 = US$ 0,64. **Total aproximado US$ 11,88/mês**, mais tráfego excedente, tributos e qualquer serviço adicional. Reconfirme preço/eligibilidade na região efetiva antes de criar. CPU Standard evita cobrança de créditos excedentes de Unlimited, mas limita desempenho quando os créditos acabam. Os US$ 100 são um saldo promocional, não mensal, e sua duração não é garantida.
+Estimativa confirmada para Ohio (`us-east-2`) em 28/09/2026, 730 horas/mês, antes dos créditos: t3.micro Linux US$ 0,0104/h = US$ 7,592; IPv4 público US$ 0,005/h = US$ 3,65; gp3 8 × US$ 0,08 = US$ 0,64. **Total aproximado US$ 11,88/mês**, mais tráfego excedente, tributos e qualquer serviço adicional. Reconfirme preço/eligibilidade na região efetiva antes de criar. CPU Standard evita cobrança de créditos excedentes de Unlimited, mas limita desempenho quando os créditos acabam. Os US$ 100 são um saldo promocional, não mensal, e sua duração não é garantida.
 
 Fontes: [EC2 T3](https://aws.amazon.com/ec2/instance-types/t3/), [EBS](https://aws.amazon.com/ebs/pricing/), [IPv4](https://aws.amazon.com/vpc/pricing/).
 
@@ -65,7 +65,7 @@ Valide cadastro de cliente/equipamento, ordem, mão de obra, aprovação, execu�
 
 ## Atualizar o JAR
 
-Repita build/testes e envie apenas o novo JAR. Execute `sudo servicehub-update /home/ec2-user/app.jar SHA256`. O script verifica hash, obtém trava de manutenção, para o serviço, faz backup frio do H2, guarda `app.jar.previous`, troca o JAR e aguarda saúde por até 120 segundos. Não sobrescreve o diretório de dados. Em falha o serviço fica parado para investigação; não faz rollback automático de esquema. Mantenha também o JAR correspondente a cada backup. Planeje espaço: o volume de 8 GiB não comporta retenção ilimitada.
+Repita build/testes e envie apenas o novo JAR. Execute `sudo servicehub-update /home/ec2-user/app.jar SHA256`. O script verifica hash, obtém trava de manutenção, para o serviço, faz backup frio do H2, guarda `app.jar.previous`, troca o JAR e aguarda saúde por até 120 segundos (conexão: 2 s; chamada: 5 s; encerramento forçado após mais 2 s, se necessário). Não sobrescreve o diretório de dados. Em falha o serviço fica parado para investigação; não faz rollback automático de esquema. Mantenha também o JAR correspondente a cada backup. Planeje espaço: o volume de 8 GiB não comporta retenção ilimitada.
 
 ## Backup consistente e restauração
 
@@ -100,3 +100,17 @@ Confirme dados pela interface. Em falha mantenha o serviço parado e preserve ta
 - Pare a instância pelo console para suspender computação. EBS continua cobrado; snapshots e Elastic IP, se existirem, também podem continuar. IPv4 automático é liberado e pode mudar no próximo início. Atualize túnel/SCP com o novo IP.
 - Antes de encerrar/excluir a instância, copie e teste backup externo e guarde configuração/JAR. Verifique `DeleteOnTermination`: volume raiz pode ser excluído junto com a instância, destruindo H2 e backups locais.
 - Após encerramento, confira volumes/snapshots remanescentes, Elastic IPs e SG/par de chaves exclusivos. Exclua somente recursos comprovadamente deste projeto e sem uso, com autorização para exclusões definitivas. Não remova VPC padrão compartilhada. Confira Billing após o atraso de contabilização. O orçamento pode permanecer como acompanhamento.
+
+## Instância efetiva e acesso validado — 28/09/2026
+
+Implantação em Ohio (`us-east-2`): `servicehub-dev`, instância `i-0d26611f9832a61c9`, IPv4 automático `18.224.63.142`. Configuração proposta acima efetivamente aplicada. Orçamento criado com os três alertas. Consulte [evidências completas](AWS-VALIDACAO.md) para CI, rede, persistência e restauração.
+
+Neste computador, a chave e o arquivo de hosts verificados estão em `C:\Users\SUPORTE\.ssh`. Para reabrir o túnel quando não houver outro escutando em 8083:
+
+```powershell
+ssh -i C:\Users\SUPORTE\.ssh\servicehub-dev.pem -o UserKnownHostsFile=C:\Users\SUPORTE\.ssh\servicehub-dev-known_hosts -o StrictHostKeyChecking=yes -o ConnectTimeout=10 -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -N -L 127.0.0.1:8083:127.0.0.1:8083 ec2-user@18.224.63.142
+```
+
+Abra http://127.0.0.1:8083. Esse acesso foi validado no computador, inclusive com fluxo completo na EC2. A origem SSH autorizada é `201.74.182.206/32`; se mudar, ajuste somente essa regra no SG `sg-0a68721ee7dc69a9d`.
+
+O backup externo testado está em `C:\Users\SUPORTE\Documents\ServiceHub-backups\servicehub-backup-20260928.tar.gz`. O volume `vol-092b312ad13415b8a` é excluído ao encerrar a EC2; preserve a cópia externa e o JAR compatível. Com a instância parada, o EBS de 8 GiB continua custando aproximadamente US$ 0,64/mês antes de créditos; não há Elastic IP ou snapshot criado nesta implantação.
