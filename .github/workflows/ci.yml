@@ -26,6 +26,8 @@ jobs:
           cache: npm
       - name: Testes Java e JAR
         run: mvn -B -ntp clean verify
+      - name: Validar sintaxe dos scripts EC2
+        run: for script in deploy/aws/*.sh; do bash -n "$script"; done
       - name: Persistência após reinício
         run: python scripts/check_persistence.py
       - run: npm ci
@@ -34,6 +36,17 @@ jobs:
         run: npm run test:ui
       - name: Gerar pacote
         run: python scripts/package.py
+      - name: Checksum do JAR para EC2
+        run: cd target && sha256sum app.jar > app.jar.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ServiceHub-EC2
+          path: |
+            target/app.jar
+            target/app.jar.sha256
+            deploy/aws/
+          if-no-files-found: error
+          retention-days: 14
       - uses: actions/upload-artifact@v4
         with:
           name: ServiceHub-Windows

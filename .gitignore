@@ -8,3 +8,7 @@ playwright-report/
 test-results/
 .idea/
 .vscode/
+*.pem
+*.key
+*.mv.db
+*.trace.db

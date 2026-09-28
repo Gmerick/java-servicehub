@@ -61,6 +61,7 @@ python scripts/check_persistence.py
 
 ## Documentação
 
+- [Implantação de desenvolvimento na AWS, túnel SSH e operação do H2](docs/AWS.md)
 - [Como usar, instalar, fazer backup e resolver problemas](docs/COMO-USAR.md)
 - [Arquitetura, regras e API com exemplos](docs/ARQUITETURA.md)
 - [Roteiro de estudo e apresentação em entrevista](docs/ESTUDO.md)
