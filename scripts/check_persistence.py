@@ -3,7 +3,7 @@ import json, os, pathlib, socket, subprocess, tempfile, time, urllib.request, zi
 root = pathlib.Path(__file__).resolve().parents[1]
 jar = root / 'target/app.jar'
 with zipfile.ZipFile(jar) as archive:
-    metadata = dict(line.split('=', 1) for line in archive.read('BOOT-INF/classes/META-INF/build-info.properties').decode().splitlines() if line and not line.startswith('#'))
+    metadata = dict(line.split('=', 1) for line in archive.read('META-INF/build-info.properties').decode().splitlines() if line and not line.startswith('#'))
 expected_version = ET.parse(root / 'pom.xml').getroot().find('{http://maven.apache.org/POM/4.0.0}version').text
 assert metadata['build.version'] == expected_version, 'Metadados do JAR divergem do Maven'
 with tempfile.TemporaryDirectory(prefix='servicehub-persistence-') as directory:
@@ -56,3 +56,4 @@ with tempfile.TemporaryDirectory(prefix='servicehub-persistence-') as directory:
         print('PASS: clientes, equipamentos e peças preservados após reinício real do JAR.')
     finally:
         stop(process)
+
