@@ -29,7 +29,9 @@ jobs:
           python scripts/check_deploy.py private
           python scripts/check_deploy.py demo
       - name: Persistência após reinício
-        run: python scripts/check_persistence.py
+        run: |
+          python scripts/check_persistence.py
+          python scripts/check_persistence.py demo
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run test:ui
