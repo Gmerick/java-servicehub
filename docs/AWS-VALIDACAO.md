@@ -45,7 +45,7 @@ Relatórios locais: `target/surefire-reports/`, `target/build-aws.log`, `playwri
 
 ### CI e artefato implantado
 
-[CI manual 36495202552](https://github.com/Gmerick/java-servicehub/actions/runs/36495202552), branch `codex/aws-servicehub-dev`, commit `f7057e2`: **success**, concluída às 22:56:58 UTC em 28/09/2026. Foram aprovados 14 testes Java, persistência, 8 testes de interface, sintaxe Bash e empacotamento. Mudanças posteriores neste registro são documentais.
+[CI manual 36495202552](https://github.com/Gmerick/java-servicehub/actions/runs/36495202552), branch `codex/aws-servicehub-dev`, commit `f7057e2`: **success**, concluída às 22:56:58 UTC em 28/09/2026. Foram aprovados 14 testes Java, persistência, 8 testes de interface, sintaxe Bash e empacotamento. Esta é a primeira implantação; atualizações posteriores estão registradas abaixo.
 
 Artefato `ServiceHub-EC2` baixado dessa execução; SHA256 do JAR implantado: `56f8237ea2b30904889cab5bba14255f9be0575c43dcda1e57520cde42473a75`. Nenhuma compilação na EC2. A verificação em `update.sh` limita conexão a 2 s, chamada a 5 s e sondagem total a 120 s, mais 2 s de tolerância para encerramento forçado. Caminho de sucesso executado; expiração negativa completa não simulada.
 
@@ -90,3 +90,34 @@ Estado imediatamente anterior à restauração preservado em `/var/backups/servi
 - Escuta novamente confirmada somente em loopback 8083; teste TCP público de 5 s não conectou. Regras de rede não foram alteradas.
 - `deploy/aws/open-tunnel.ps1` executado neste computador com LocalPort 18083: túnel abriu e respondeu ao health; usado também na comparação após atualização. Túnel original 8083 permanece disponível. Nenhuma chave privada incorporada ao script ou ao Git.
 - Reconexão documentada em AWS.md. Reinício físico do computador não executado. Entrega dos alertas de orçamento por e-mail segue não testada. CI apresenta avisos de depreciação das actions v4; não impediram os testes.
+
+## Revisão técnica do PR #1 — 29/09/2026
+
+Diff completo revisado, arquivo por arquivo, incluindo os arquivos relacionados de empacotamento e release:
+
+| Arquivos | Conclusão / correção |
+|---|---|
+| `.gitattributes`, `.gitignore`, `README.md` | LF nos scripts; chaves/bancos ignorados; referência de implantação correta. Busca no conteúdo rastreado não encontrou chaves privadas, tokens GitHub ou padrões de access keys AWS. |
+| `pom.xml`, `HubController.java` | Maven é fonte da versão de aplicação; build-info gera metadado, health usa BuildProperties. Nenhum literal alternativo no endpoint. |
+| `application.properties`, `servicehub.service` | H2 em arquivo; EC2 usa diretório separado do JAR. Loopback imposto por argumento CLI, usuário sem privilégios, escrita restrita e reinício limitado. `schema.sql` revisado: CREATE IF NOT EXISTS, sem DROP. |
+| `install.sh`, `backup.sh`, `update.sh`, novo `common.sh` | Instalação da biblioteca comum e restore; checksum do JAR conferido também após copiar; atualização aborta com banco anterior ausente; backup frio com integridade gzip e checksum; health exige JSON UP e versão igual ao JAR, mantendo limites de tempo. |
+| Novo `restore.sh` | Substitui receita manual sem fail-fast/trava: verifica hash, conteúdo e tipo do único membro, extrai em staging privado, preserva estado atual, usa troca por rename e falha de forma explícita. |
+| `open-tunnel.ps1` | IP retirado do código, parâmetro/env obrigatório; validação de endereço e porta ocupada; BatchMode/IdentitiesOnly e limites de conexão; verificação de host mantida. IPs em documentação são evidências/exemplos da instalação, não credenciais. |
+| `check_persistence.py`, `package.py` | Teste isola variáveis DB_URL/DB_PASSWORD herdadas e verifica versão também após reinício. ZIP deriva versão dos metadados, eliminando literal adicional. |
+| Workflows CI/release | Release deriva tag/título do Maven. Actions oficiais fixadas por SHA; checkout/setup-java/setup-node v5 e upload-artifact v6; Ubuntu 24.04. Testes falham o job, sem continue-on-error. Publicação da release continua manual, só na main. |
+| `docs/AWS.md`, este registro | Restauração e reconexão atualizadas; corrigida descrição histórica que dizia que todas as mudanças posteriores eram documentais. Limitações de proteção de branch e validação semântica explicitadas. |
+
+### Testes e operação
+
+- CI [36559627504](https://github.com/Gmerick/java-servicehub/actions/runs/36559627504), código `702e266`: aprovada. 14 testes Java, versão e persistência do JAR real, 8 testes de interface (21,2 s), empacotamento e testes novos de manutenção.
+- `scripts/check_deploy.py` executa cópias dos scripts em diretórios temporários Linux; adapta caminhos, privilégios e prazo para 1 s, simula systemctl/curl, usa tar/SHA256/flock/timeout reais. Aprovados: backup, restauração e preservação do estado anterior, rejeição de checksum/caminhos/links, banco ausente, atualização sem alteração dos dados, versão incorreta encerrando por prazo e deixando serviço parado. Não equivale a novo teste de restauração H2 completo na EC2.
+- Teste de persistência local com DB_URL herdado propositalmente divergente: aprovado, sem usar esse caminho; versão 1.1.0 antes/depois do reinício.
+- Túnel revisado: endereço ausente, chave ausente e porta ocupada retornam erros claros; conexão real em 18084 respondeu UP/1.1.0. Túnel temporário encerrado; original 8083 preservado.
+- Console Ohio: uma EC2 existente, running, 3/3 checks. SG `sg-0a68721ee7dc69a9d`: somente TCP22 de `201.74.182.206/32`; nenhuma entrada 8083. Novo teste público TCP8083 não conectou. SSH/ss confirmam Java em loopback; servicehub sem privilégios, NoNewPrivileges=yes; dados 0700/0600.
+- Scripts de manutenção dessa CI instalados na EC2. Backup real novo `/var/backups/servicehub/h2-20260929T110845-49305.tar.gz`: checksum aprovado, retorno zero após saúde, todos os registros capturados antes/depois idênticos. Restore com checksum incorreto rejeitado antes de parar o serviço (Python 3.9 da EC2), que permaneceu active.
+- JAR existente não substituído nesta revisão; SHA256 continua `3a8ba544ec31ceb408405bef8a3b7ff05f1499d66f101330f9fd962e6bf662f8`, health UP/1.1.0. Nenhuma mudança de infraestrutura, rede, plano ou capacidade de armazenamento.
+- CI intermediária detectou codificação Windows inválida e depois requisito de ownership do teste em sandbox sem root; corrigidos antes da execução aprovada. O upload v5 ainda declarou Node20; trocado por v6 cujo action.yml declara Node24. Warnings internos de dependências das actions e API deprecated nos testes não foram suprimidos.
+
+### Antes do merge
+
+A API retornou `Branch not protected` para main e nenhum ruleset. O check `validate` precisa ser exigido em proteção de branch/ruleset para impedir merge com CI vermelha; essa configuração de governança não foi alterada. Confira a CI do commit final no PR. O novo restore tem testes de controle de falha em sandbox; a restauração H2 real documentada anteriormente foi feita pelo procedimento anterior. Restauração exige backup/JAR compatíveis e conferência dos registros; checksum não prova correção de negócio. Alertas por e-mail e reinício físico do computador seguem não testados. Nenhuma release publicada e nenhum merge realizado.

@@ -65,7 +65,7 @@ Valide cadastro de cliente/equipamento, ordem, mão de obra, aprovação, execu�
 
 ## Atualizar o JAR
 
-Repita build/testes e envie apenas o novo JAR. Execute `sudo servicehub-update /home/ec2-user/app.jar SHA256`. O script verifica hash, obtém trava de manutenção, para o serviço, faz backup frio do H2, guarda `app.jar.previous`, troca o JAR e aguarda saúde por até 120 segundos (conexão: 2 s; chamada: 5 s; encerramento forçado após mais 2 s, se necessário). Não sobrescreve o diretório de dados. Em falha o serviço fica parado para investigação; não faz rollback automático de esquema. Mantenha também o JAR correspondente a cada backup. Planeje espaço: o volume de 8 GiB não comporta retenção ilimitada.
+Repita build/testes e envie apenas o novo JAR. Execute `sudo servicehub-update /home/ec2-user/app.jar SHA256`. O script verifica hash, obtém trava de manutenção, para o serviço, faz backup frio do H2 com checksum, guarda `app.jar.previous`, troca o JAR e aguarda saúde por até 120 segundos (conexão: 2 s; chamada: 5 s; encerramento forçado após mais 2 s, se necessário). Não sobrescreve o diretório de dados. Em falha o serviço fica parado para investigação; não faz rollback automático de esquema. Mantenha também o JAR correspondente a cada backup. Planeje espaço: o volume de 8 GiB não comporta retenção ilimitada.
 
 ## Backup consistente e restauração
 
@@ -73,23 +73,17 @@ Repita build/testes e envie apenas o novo JAR. Execute `sudo servicehub-update /
 sudo servicehub-backup
 ```
 
-Há breve indisponibilidade. O script serializa manutenção, para a aplicação, copia o arquivo fechado para `/var/backups/servicehub/h2-DATA-PID.tar.gz`, gera SHA256 e reinicia somente se estava ativa. Não copie o `.mv.db` enquanto o processo estiver usando o banco. Transfira uma cópia para seu computador via SCP: primeiro copie explicitamente o arquivo escolhido para a home de `ec2-user` com permissão 0600 e dono `ec2-user`; após o download e verificação de hash, remova a cópia intermediária. Um backup no mesmo EBS não protege contra exclusão ou falha do volume. Não foi contratado armazenamento adicional.
+Há breve indisponibilidade. O script serializa manutenção, para a aplicação, copia o arquivo fechado para `/var/backups/servicehub/h2-DATA-PID.tar.gz`, valida o arquivo comprimido, gera e confere SHA256 e reinicia somente se estava ativa, verificando status e versão. Não copie o `.mv.db` enquanto o processo estiver usando o banco. Transfira uma cópia para seu computador via SCP: primeiro copie explicitamente o arquivo escolhido para a home de `ec2-user` com permissão 0600 e dono `ec2-user`; após o download e verificação de hash, remova a cópia intermediária. Um backup no mesmo EBS não protege contra exclusão ou falha do volume. Não foi contratado armazenamento adicional.
 
-Para restaurar, escolha um backup confiável e valide seu SHA256; `tar -tzf ARQUIVO` deve conter apenas `servicehub.mv.db`. Execute com exclusividade, sem outra atualização/backup:
+Para restaurar, use o comando instalado, um backup confiável e o SHA256 registrado fora da instância:
 
 ```sh
-sudo systemctl stop servicehub
-# Preserve o estado atual antes de substituir.
-sudo cp -a /var/lib/servicehub /var/backups/servicehub/before-restore-DATA
-sudo tar -xzf /CAMINHO/backup.tar.gz -C /var/lib/servicehub --no-same-owner
-sudo chown servicehub:servicehub /var/lib/servicehub/servicehub.mv.db
-sudo chmod 600 /var/lib/servicehub/servicehub.mv.db
-# Restaure também o JAR compatível se houve mudança de esquema.
-sudo systemctl start servicehub
-curl --fail http://127.0.0.1:8083/api/health
+sudo servicehub-restore /var/backups/servicehub/h2-DATA-PID.tar.gz SHA256_CONFIAVEL
 ```
 
-Confirme dados pela interface. Em falha mantenha o serviço parado e preserve tanto o backup quanto o estado anterior. Restauração só conta como validada após teste real.
+O comando obtém a mesma trava de atualização/backup, copia o arquivo para uma área privada, valida o checksum e exige exatamente um arquivo regular não vazio chamado `servicehub.mv.db` (rejeita links e outros caminhos). Só então para o serviço, salva o estado atual com checksum e substitui o banco por renomeação no mesmo volume. Erros interrompem a operação; após a parada, não há reinício automático em caso de falha. Antes de restaurar banco de outra versão, disponibilize o JAR compatível. O teste de saúde compara status e versão com o JAR; ele não comprova a semântica de todos os registros. Confira dados pela interface após a restauração e retenha o estado anterior.
+
+Os comandos recusam configuração DB_URL diferente do caminho suportado. Um novo deploy não copia arquivos para o diretório do banco; se já houver JAR instalado e o banco estiver ausente/vazio, a atualização aborta para evitar inicializar silenciosamente outro banco. Migrações de esquema pelo próprio aplicativo continuam exigindo backup e compatibilidade.
 
 ## Diagnóstico, parada e remoção
 
@@ -120,7 +114,7 @@ O backup externo testado está em `C:\Users\SUPORTE\Documents\ServiceHub-backups
 Na raiz do repositório, execute:
 
 ```powershell
-.\deploy\aws\open-tunnel.ps1
+.\deploy\aws\open-tunnel.ps1 -Ec2Address '18.224.63.142'
 ```
 
 Mantenha o terminal aberto e acesse http://127.0.0.1:8083. Fechar o terminal, pressionar Ctrl+C ou reiniciar o computador encerra o túnel; execute novamente o mesmo comando para reconectar. A aplicação e os dados continuam na EC2. Se já houver um túnel em 8083, use o existente ou escolha outra porta:
@@ -129,8 +123,14 @@ Mantenha o terminal aberto e acesse http://127.0.0.1:8083. Fechar o terminal, pr
 .\deploy\aws\open-tunnel.ps1 -Ec2Address '18.224.63.142' -KeyFile "$env:USERPROFILE\.ssh\servicehub-dev.pem" -KnownHostsFile "$env:USERPROFILE\.ssh\servicehub-dev-known_hosts" -LocalPort 18083
 ```
 
-Nesse caso abra http://127.0.0.1:18083. O script exige host previamente verificado e não contém chave privada. Após mudança do IPv4 da EC2, informe o endereço novo e confira a chave do host no console antes de atualizar o arquivo known_hosts. Após mudança do IP público do computador, atualize a origem /32 do SSH. Não abra 8083 no security group.
+Nesse caso abra http://127.0.0.1:18083. O endereço não está embutido no script: informe `-Ec2Address` ou a variável `SERVICEHUB_EC2_ADDRESS`. Porta ocupada, chave/known_hosts ausentes e endereço inválido causam erro antes de conectar. O modo BatchMode evita prompts indefinidos; chaves com senha precisam estar carregadas no ssh-agent. Falhas de SSH retornam erro, sem alterar regras de rede. O script exige host previamente verificado e não contém chave privada. Após mudança do IPv4 da EC2, informe o endereço novo e confira a chave do host no console antes de atualizar o arquivo known_hosts. Após mudança do IP público do computador, atualize a origem /32 do SSH. Não abra 8083 no security group.
+
+## CI e decisão de merge
+
+A CI falha se build, testes Java, versão/persistência, manutenção em sandbox ou interface falharem. Em 29/09/2026, a API GitHub indicou que `main` não tinha proteção nem ruleset. Portanto o check vermelho não impede tecnicamente o merge. Antes de aprovar, configure a exigência do check `validate` e confirme que ele está verde no commit atual. Configuração de proteção não foi alterada nesta revisão.
 
 ## Versão do artefato
 
 O Maven executa `spring-boot:build-info` e gera `META-INF/build-info.properties`. `/api/health` usa `BuildProperties`, sem versão fixa ou fallback. Ao iniciar pela IDE, execute antes `mvn generate-resources` para gerar esse metadado. A CI abre o JAR, compara `build.version` com a versão do POM e consulta a versão HTTP do próprio artefato durante o teste de persistência.
+
+O nome do ZIP e a tag/título da release também derivam do Maven/metadado do JAR. Versões em notas históricas documentam releases passadas; package.json identifica apenas as ferramentas privadas de teste da interface. Checkout/setup-java/setup-node foram migradas para v5 e upload-artifact para v6 (Node 24), fixadas por SHA, e o runner para Ubuntu 24.04.
