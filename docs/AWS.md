@@ -127,7 +127,7 @@ Nesse caso abra http://127.0.0.1:18083. O endereço não está embutido no scrip
 
 ## CI e decisão de merge
 
-A CI falha se build, testes Java, versão/persistência, manutenção em sandbox ou interface falharem. Em 29/09/2026, a API GitHub indicou que `main` não tinha proteção nem ruleset. Portanto o check vermelho não impede tecnicamente o merge. Antes de aprovar, configure a exigência do check `validate` e confirme que ele está verde no commit atual. Configuração de proteção não foi alterada nesta revisão.
+A CI falha se build, testes Java, versão/persistência, manutenção em sandbox ou interface falharem. Em 29/09/2026 foi configurada e relida pela API a proteção clássica da `main`: PR obrigatório, check `validate` do GitHub Actions obrigatório e branch atualizada, regras aplicadas também a administradores, force-push e deleção bloqueados. Não há aprovação obrigatória de reviewers (repositório pessoal). Auto-merge permanece desativado. A configuração fica em Settings → Branches → Branch protection rules → main. Antes de decidir pelo merge, confira o check verde do HEAD atual; o merge depende de autorização humana explícita.
 
 ## Versão do artefato
 
