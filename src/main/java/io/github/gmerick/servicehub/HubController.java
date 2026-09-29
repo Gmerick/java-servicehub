@@ -4,6 +4,7 @@ import static io.github.gmerick.servicehub.Model.*;
 import java.util.*;
 import jakarta.validation.Valid;
 import org.springframework.http.*;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -11,8 +12,9 @@ import org.springframework.web.bind.annotation.*;
 public class HubController {
     private final HubService service;
     private final HubRepository repo;
-    public HubController(HubService service,HubRepository repo) { this.service=service;this.repo=repo; }
-    @GetMapping("/health") public Map<String,String> health() { return Map.of("status","UP","version","1.0.0"); }
+    private final BuildProperties build;
+    public HubController(HubService service,HubRepository repo,BuildProperties build) { this.service=service;this.repo=repo;this.build=build; }
+    @GetMapping("/health") public Map<String,String> health() { return Map.of("status","UP","version",build.getVersion()); }
     @GetMapping("/customers") public List<Customer> customers() { return repo.customers(); }
     @PostMapping("/customers") @ResponseStatus(HttpStatus.CREATED) public Customer customer(@Valid @RequestBody CustomerInput input) { return service.createCustomer(input); }
     @GetMapping("/assets") public List<Asset> assets() { return repo.assets(); }
