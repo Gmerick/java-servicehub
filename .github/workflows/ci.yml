@@ -28,6 +28,8 @@ jobs:
         run: mvn -B -ntp clean verify
       - name: Validar sintaxe dos scripts EC2
         run: for script in deploy/aws/*.sh; do bash -n "$script"; done
+      - name: Manutencao EC2 em sandbox
+        run: python scripts/check_deploy.py
       - name: Persistência após reinício
         run: python scripts/check_persistence.py
       - run: npm ci
