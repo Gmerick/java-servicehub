@@ -28,17 +28,17 @@ with open(sys.argv[1], 'rb') as payload:
         with archive.extractfile(members[0]) as source, open(sys.argv[3], 'wb') as destination:
             shutil.copyfileobj(source, destination)
 PY
-systemctl stop servicehub
+systemctl stop "$service"
 # Failure after stopping leaves the service stopped and preserves the old database.
 cold_backup before-restore
-chown servicehub:servicehub "$stage/servicehub.mv.db"
+chown "$service:$service" "$stage/servicehub.mv.db"
 chmod 600 "$stage/servicehub.mv.db"
 mv -f "$stage/servicehub.mv.db" "$data_dir/servicehub.mv.db"
-systemctl start servicehub
+systemctl start "$service"
 if wait_healthy; then
   echo 'Restaurado; confira os registros pela interface antes de retomar o uso.'
 else
-  systemctl stop servicehub
+  systemctl stop "$service"
   echo 'Falha de saude; servico parado. Estado anterior no backup before-restore.' >&2
   exit 1
 fi

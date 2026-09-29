@@ -23,6 +23,11 @@ jobs:
           node-version: '22'
           cache: npm
       - run: mvn -B -ntp clean verify
+      - name: Manutencao privada e demonstrativa
+        run: |
+          for script in deploy/aws/*.sh deploy/public-demo/*.sh; do bash -n "$script"; done
+          python scripts/check_deploy.py private
+          python scripts/check_deploy.py demo
       - name: Persistência após reinício
         run: python scripts/check_persistence.py
       - run: npm ci

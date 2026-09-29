@@ -19,7 +19,12 @@ if errorlevel 1 (
   exit /b 1
 )
 echo Abra http://localhost:8083 quando o servidor terminar de iniciar.
-java -jar target\app.jar
+if not defined SERVICEHUB_ADMIN_FILE (
+  echo Configure SERVICEHUB_ADMIN_FILE com o caminho do admin.secrets.properties externo. Veja docs/COMO-USAR.md.
+  pause
+  exit /b 1
+)
+java -jar target\app.jar "--spring.config.additional-location=file:%SERVICEHUB_ADMIN_FILE%"
 pause
 exit /b
 :missing

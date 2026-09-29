@@ -10,7 +10,7 @@ import java.net.http.*;
 import java.time.LocalDate;
 import java.util.concurrent.*;
 
-@SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT,properties={"spring.datasource.url=jdbc:h2:mem:tests;DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=10000","app.demo=false"})
+@SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT,properties={"spring.datasource.url=jdbc:h2:mem:tests;DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=10000","app.demo=false","app.login.max-attempts=100"})
 class ServiceHubTest extends HttpTestSupport {
  @Autowired JdbcTemplate db;
  @BeforeEach void clear() {

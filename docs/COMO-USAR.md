@@ -4,13 +4,17 @@
 
 1. Tenha Java 17 ou superior instalado. No terminal, `java -version` deve funcionar.
 2. Baixe o pacote gerado pela CI do repositório. Extraia os dois ZIPs, quando houver o ZIP externo de artefato do GitHub.
-3. Dentro da pasta `ServiceHub`, dê dois cliques em `INICIAR.cmd`.
+3. Na pasta `ServiceHub`, use um terminal com JDK17 e Python3: `python scripts/create_admin.py app.jar CAMINHO_PRIVADO/admin.secrets.properties`. Escolha a senha no terminal. Defina `SERVICEHUB_ADMIN_FILE` com esse caminho completo e execute `INICIAR.cmd` no mesmo terminal. Não use senha padrão nem publique o arquivo.
 4. Espere a mensagem `Started ServiceHubApplication` e abra http://localhost:8083.
 5. Mantenha o terminal aberto enquanto utiliza o sistema. Para parar, pressione `Ctrl+C`.
 
 Para desenvolver, instale também JDK e Maven, clone o repositório e execute `INICIAR-DESENVOLVIMENTO.cmd`. O script reconhece ferramentas na pasta `%USERPROFILE%\ProjetosJavaJr\ferramentas` do kit anterior ou no PATH.
 
-No Linux/macOS: `mvn clean verify` e `java -jar target/app.jar`. Execute os comandos a partir da raiz do projeto.
+No Linux/macOS: `mvn clean verify`, gere as credenciais externas com `python scripts/create_admin.py target/app.jar /caminho/privado/admin.secrets.properties` e execute `java -jar target/app.jar --spring.config.additional-location=file:/caminho/privado/admin.secrets.properties`. O perfil padrão mantém o banco `data` e exige login ADMIN. Para dados fictícios separados e acesso VISITANTE acrescente `--spring.profiles.active=demo` (banco `data-demo`). Execute a partir da raiz do projeto. Consulte [PUBLIC-DEMO.md](PUBLIC-DEMO.md) para HTTPS e recuperação.
+
+## Login e consulta
+
+ADMIN pode executar os fluxos abaixo; VISITANTE pode consultar, exportar e abrir históricos, sem alterar dados. O backend bloqueia gravações de visitante inclusive por chamadas diretas. Use Sair para invalidar a sessão. Após 30 minutos sem atividade ou reinício do servidor, entre novamente. Em excesso de tentativas, aguarde um minuto. Não há cadastro público de administrador. Credenciais são configuradas fora do Git; sua ausência impede a inicialização.
 
 ## Primeiro atendimento
 

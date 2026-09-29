@@ -1,9 +1,9 @@
-# ServiceHub 1.1.0 — uma nova bancada
+# ServiceHub 1.2.0 — demonstração com acesso protegido
 
-Interface redesenhada com cores frias e leves, navegação horizontal, atendimentos em linhas e estoque em uma coluna lateral assimétrica. Animações suaves em transições, modal e controles; suporte a movimento reduzido. Layout adaptado para celular.
+Login em português, sessões com CSRF, logout, limite de tentativas e perfis ADMIN/VISITANTE. Visitantes consultam dados fictícios sem permissão de gravação no backend. Identidade visual e regras de negócio preservadas.
 
-Baixe ServiceHub-1.1.0.zip, extraia e execute INICIAR.cmd com Java 17+. Abra http://localhost:8083. Consulte COMO-USAR.md no pacote.
+O primeiro início exige credenciais administrativas externas; não há senha padrão nem cadastro público. Consulte COMO-USAR.md para gerar o hash BCrypt em terminal privado. A execução usa Java17; gerar credenciais requer JDK17 e Python3. Java não acompanha o ZIP.
 
-Para atualizar a versão anterior: encerre o programa, faça backup da pasta data e copie essa pasta para dentro da nova pasta ServiceHub antes de iniciar. Não execute as duas versões ao mesmo tempo. O esquema do banco e as regras de negócio permanecem compatíveis.
+O perfil demo usa data-demo, separado do banco data existente. Antes de atualizar qualquer instalação, encerre o programa e faça backup consistente do banco e do JAR. Preserve os dados e suas credenciais externas. Não execute duas versões sobre o mesmo banco.
 
-Distribuição validada por testes de API, persistência e navegador. Uso local, sem autenticação. Java não está incluído no ZIP.
+Caddy e perfil público HTTPS preparados para a mesma EC2, mas publicação depende de domínio, backup e corte autorizado. Este PR não publica nem modifica a instalação AWS. Consulte docs/PUBLIC-DEMO.md no repositório para implantação e recuperação.

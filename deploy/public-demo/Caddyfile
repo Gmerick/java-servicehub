@@ -1,0 +1,12 @@
+{
+	email {$ACME_EMAIL}
+	admin localhost:2019
+}
+{$DEMO_DOMAIN} {
+	encode zstd gzip
+	request_body {
+		max_size 64KB
+	}
+	reverse_proxy 127.0.0.1:8083
+	header Strict-Transport-Security "max-age=31536000"
+}

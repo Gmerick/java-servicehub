@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 # Callers are root and hold the deployment lock.
-data_dir=/var/lib/servicehub
-backup_dir=/var/backups/servicehub
+case "${SERVICEHUB_INSTANCE:-private}" in
+  private) service=servicehub; data_dir=/var/lib/servicehub; backup_dir=/var/backups/servicehub; app_dir=/opt/servicehub; config_dir=/etc/servicehub ;;
+  demo) service=servicehub-demo; data_dir=/var/lib/servicehub-demo; backup_dir=/var/backups/servicehub-demo; app_dir=/opt/servicehub-demo; config_dir=/etc/servicehub-demo ;;
+  *) echo 'Instancia invalida (private ou demo).' >&2; exit 1 ;;
+esac
 check_database_config() {
-  grep -Fxq 'DB_URL=jdbc:h2:file:/var/lib/servicehub/servicehub;WRITE_DELAY=0' /etc/servicehub/servicehub.env || {
+  grep -Fxq "DB_URL=jdbc:h2:file:$data_dir/servicehub;WRITE_DELAY=0" "$config_dir/servicehub.env" || {
     echo 'DB_URL divergente: ajuste os procedimentos antes da manutencao.' >&2; return 1;
   }
 }
@@ -19,7 +22,7 @@ cold_backup() {
 }
 wait_healthy() {
   local expected
-  expected=$(python3 - /opt/servicehub/app.jar <<'PY'
+  expected=$(python3 - "$app_dir/app.jar" <<'PY'
 import sys, zipfile
 with zipfile.ZipFile(sys.argv[1]) as jar:
     props = dict(line.split('=', 1) for line in jar.read('META-INF/build-info.properties').decode().splitlines() if line and not line.startswith('#'))
@@ -31,5 +34,6 @@ PY
       python3 -c '\''import json,sys; h=json.load(sys.stdin); sys.exit(0 if h == {"status":"UP","version":sys.argv[1]} else 1)'\'' "$1" 2>/dev/null; do
       sleep 2
     done
-  ' _ "$expected"
+  ' _ "$expected" || return 1
+  systemctl is-active --quiet "$service"
 }

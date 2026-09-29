@@ -3,6 +3,8 @@ node_modules/
 data/
 dist/
 .env
+*.secrets.properties
+data-demo/
 *.log
 playwright-report/
 test-results/

@@ -14,5 +14,7 @@ archive = out / f'ServiceHub-{version}.zip'
 with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as z:
     for source, destination in [(jar, 'app.jar'), (root/'scripts/INICIAR.cmd','INICIAR.cmd'),(root/'README.md','README.md'),(root/'docs/COMO-USAR.md','COMO-USAR.md'),(root/'LICENSE','LICENSE')]:
         z.write(source, 'ServiceHub/'+destination)
+    for name in ['create_admin.py', 'AdminCredentials.java']:
+        z.write(root/'scripts'/name, 'ServiceHub/scripts/'+name)
 (out/'SHA256SUMS.txt').write_text(hashlib.sha256(archive.read_bytes()).hexdigest()+'  '+archive.name+'\n')
 print(archive)
