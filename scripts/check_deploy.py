@@ -17,7 +17,7 @@ with tempfile.TemporaryDirectory() as directory:
     env = dict(os.environ, PATH=str(bin_dir)+':'+os.environ['PATH'], STATE=str(base/'state'), HEALTH=str(base/'health'))
     (base/'state').write_text('active'); (base/'health').write_text('{"status":"UP","version":"9.8.7"}')
     for source in (root/'deploy/aws').glob('*.sh'):
-        text = source.read_text().replace('$EUID == 0', '1 == 1')
+        text = source.read_text().replace('$EUID == 0', '1 == 1').replace('-o root -g root ', '')
         for path in paths: text = text.replace(path, str(base/path.lstrip('/')))
         text = text.replace('120s', '1s').replace('sleep 2', 'sleep 0.05')
         target = base/source.name; target.write_text(text)
