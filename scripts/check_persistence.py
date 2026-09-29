@@ -1,4 +1,4 @@
-"""Prova de reinÃ­cio usando o JAR real e um banco temporÃ¡rio em arquivo."""
+"""Prova de reinício usando o JAR real e um banco temporário em arquivo."""
 import json, os, pathlib, socket, subprocess, tempfile, time, urllib.request, zipfile, xml.etree.ElementTree as ET
 root = pathlib.Path(__file__).resolve().parents[1]
 jar = root / 'target/app.jar'
@@ -19,7 +19,7 @@ with tempfile.TemporaryDirectory(prefix='servicehub-persistence-') as directory:
             return json.load(response)
     def launch():
         log = open(pathlib.Path(directory)/'server.log', 'ab')
-        process = subprocess.Popen(['java', '-jar', str(jar), f'--server.port={port}', '--app.demo=false'], cwd=directory, stdout=log, stderr=log)
+        process = subprocess.Popen(['java', '-jar', str(jar), f'--server.port={port}', '--app.demo=false'], cwd=directory, env={k:v for k,v in os.environ.items() if k not in ('DB_URL','DB_PASSWORD','APP_DEMO','SERVER_ADDRESS','PORT')}, stdout=log, stderr=log)
         log.close()
         for _ in range(120):
             if process.poll() is not None:
@@ -31,7 +31,7 @@ with tempfile.TemporaryDirectory(prefix='servicehub-persistence-') as directory:
                 time.sleep(.25)
         process.terminate()
         process.wait(timeout=15)
-        raise RuntimeError('Servidor nÃ£o iniciou em 30 segundos')
+        raise RuntimeError('Servidor não iniciou em 30 segundos')
     def stop(process):
         process.terminate()
         try:
@@ -43,17 +43,17 @@ with tempfile.TemporaryDirectory(prefix='servicehub-persistence-') as directory:
     try:
         assert request('/health') == {'status': 'UP', 'version': metadata['build.version']}
         print(f'PASS: /api/health corresponde ao artefato Maven: {expected_version}')
-        customer = request('/customers', {'name':'PersistÃªncia', 'email':'persistencia@example.com', 'phone':'11'})
+        customer = request('/customers', {'name':'Persistência', 'email':'persistencia@example.com', 'phone':'11'})
         asset = request('/assets', {'customerId':customer['id'], 'name':'Notebook persistente', 'serial':'PERSIST-01'})
-        part = request('/parts', {'name':'PeÃ§a persistente', 'sku':'PERSIST-01', 'price':10.50, 'stock':5, 'minimum':1})
+        part = request('/parts', {'name':'Peça persistente', 'sku':'PERSIST-01', 'price':10.50, 'stock':5, 'minimum':1})
     finally:
         stop(process)
     process = launch()
     try:
+        assert request('/health') == {'status': 'UP', 'version': metadata['build.version']}
         assert request('/customers')[0]['id'] == customer['id']
         assert request('/assets')[0]['id'] == asset['id']
         assert request('/parts')[0]['stock'] == 5
-        print('PASS: clientes, equipamentos e peÃ§as preservados apÃ³s reinÃ­cio real do JAR.')
+        print('PASS: clientes, equipamentos e peças preservados após reinício real do JAR.')
     finally:
         stop(process)
-
