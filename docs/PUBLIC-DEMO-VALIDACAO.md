@@ -1,5 +1,7 @@
 # Evidências da preparação 1.2.0
 
+> Registro histórico. Para o estado publicado em 30/09/2026, consulte [PUBLICACAO-2026-09-30.md](PUBLICACAO-2026-09-30.md). O serviço privado está preservado e desabilitado; a demonstração usa Caddy HTTPS e banco separado.
+
 Data: 2026-09-29. Branch `codex/servicehub-public-demo`, originada da main integrada `92789d1da46615468812042d717ebfa0fcb4c2ef`. Nenhum deploy, acesso ao banco privado, alteração de infraestrutura AWS, plano, DNS ou Security Group foi realizado nesta entrega.
 
 ## Executado localmente

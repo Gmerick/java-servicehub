@@ -18,7 +18,7 @@ Aplicação de portfólio em **Java 17 + Spring Boot**, com interface web em por
 - Filtrar e paginar ordens, exportar CSV e acompanhar indicadores no painel.
 - Usar a interface em desktop ou celular, com estados vazios, mensagens de erro e recuperação.
 
-O valor das ordens concluídas representa **orçamentos concluídos**, não recebimentos financeiros. A versão 1.2.0 inclui login por sessão, ADMIN e VISITANTE com autorização no backend, CSRF e demonstração em banco separado. Não inclui pagamentos ou notas fiscais. A publicação HTTPS está preparada, mas depende de domínio e corte autorizado; a instalação AWS anterior permanece privada.
+O valor das ordens concluídas representa **orçamentos concluídos**, não recebimentos financeiros. A versão 1.2.0 inclui login por sessão, ADMIN e VISITANTE com autorização no backend, CSRF e demonstração em banco separado. Não inclui pagamentos ou notas fiscais. A [demonstração pública HTTPS](https://servicehub.leadopssender.com.br) está disponível: clique em **Explorar como visitante**, sem senha. Somente dados fictícios; alterações exigem ADMIN. A instalação privada anterior foi preservada, parada e desabilitada. Veja as [evidências da publicação](docs/PUBLICACAO-2026-09-30.md).
 
 [Login desktop](docs/screenshots/demo-login-desktop.png) · [Login móvel](docs/screenshots/demo-login-mobile.png) · [Consulta de visitante](docs/screenshots/demo-visitor-desktop.png) · [Visitante móvel](docs/screenshots/demo-visitor-mobile.png)
 
