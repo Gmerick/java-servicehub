@@ -1,4 +1,12 @@
 const { test, expect } = require("@playwright/test");
+const auth = require('../target/test-auth.json');
+test.beforeEach(async ({page})=>{
+  await page.goto('/login.html');
+  await page.getByLabel('Usuário',{exact:true}).fill(auth.username);
+  await page.getByLabel('Senha',{exact:true}).fill(auth.password);
+  await page.getByRole('button',{name:'Entrar',exact:true}).click();
+  await expect(page.getByRole('heading',{name:'Vamos ao próximo serviço.'})).toBeVisible();
+});
 async function navigate(page, name) {
   await page
     .getByRole("navigation")
@@ -191,7 +199,9 @@ test("conteúdo digitado permanece texto, sem executar HTML", async ({
   page,
   request,
 }) => {
-  await request.post("/api/customers", {
+  const csrf=await (await page.request.get("/api/csrf")).json();
+  await page.request.post("/api/customers", {
+    headers: {[csrf.headerName]:csrf.token},
     data: {
       name: "<img src=x onerror=alert(1)>",
       email: "xss@example.com",

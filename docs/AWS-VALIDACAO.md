@@ -1,5 +1,7 @@
 # Evidências de implantação AWS — 28/09/2026
 
+> Evidências históricas da instalação privada. A preparação seguinte está em [PUBLIC-DEMO-VALIDACAO.md](PUBLIC-DEMO-VALIDACAO.md). A entrega 1.2.0 não modificou nem revalidou a EC2.
+
 ## Estado inicial
 
 - Repositório clonado de `Gmerick/java-servicehub`, main `23532e1`, versão Maven 1.1.0, Java 17, Spring Boot 4.0.7.

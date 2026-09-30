@@ -27,11 +27,15 @@ jobs:
       - name: Testes Java e JAR
         run: mvn -B -ntp clean verify
       - name: Validar sintaxe dos scripts EC2
-        run: for script in deploy/aws/*.sh; do bash -n "$script"; done
+        run: for script in deploy/aws/*.sh deploy/public-demo/*.sh; do bash -n "$script"; done
       - name: Manutencao EC2 em sandbox
-        run: python scripts/check_deploy.py
+        run: |
+          python scripts/check_deploy.py private
+          python scripts/check_deploy.py demo
       - name: Persistência após reinício
-        run: python scripts/check_persistence.py
+        run: |
+          python scripts/check_persistence.py
+          python scripts/check_persistence.py demo
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - name: Fluxos de interface
@@ -47,6 +51,7 @@ jobs:
             target/app.jar
             target/app.jar.sha256
             deploy/aws/
+            deploy/public-demo/
           if-no-files-found: error
           retention-days: 14
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6

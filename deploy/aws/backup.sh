@@ -7,7 +7,7 @@ flock -n 9 || { echo 'Outra operação está em andamento.' >&2; exit 1; }
 umask 077
 check_database_config
 was_active=false
-systemctl is-active --quiet servicehub && was_active=true
-trap 'if $was_active; then systemctl start servicehub && wait_healthy || exit 1; fi' EXIT
-systemctl stop servicehub
+systemctl is-active --quiet "$service" && was_active=true
+trap 'if $was_active; then systemctl start "$service" && wait_healthy || exit 1; fi' EXIT
+systemctl stop "$service"
 cold_backup h2

@@ -18,7 +18,9 @@ Aplicação de portfólio em **Java 17 + Spring Boot**, com interface web em por
 - Filtrar e paginar ordens, exportar CSV e acompanhar indicadores no painel.
 - Usar a interface em desktop ou celular, com estados vazios, mensagens de erro e recuperação.
 
-O valor das ordens concluídas representa **orçamentos concluídos**, não recebimentos financeiros. Dados iniciais são fictícios. Projeto local de demonstração: não inclui autenticação, múltiplos perfis, pagamentos, notas fiscais ou hospedagem pública.
+O valor das ordens concluídas representa **orçamentos concluídos**, não recebimentos financeiros. A versão 1.2.0 inclui login por sessão, ADMIN e VISITANTE com autorização no backend, CSRF e demonstração em banco separado. Não inclui pagamentos ou notas fiscais. A publicação HTTPS está preparada, mas depende de domínio e corte autorizado; a instalação AWS anterior permanece privada.
+
+[Login desktop](docs/screenshots/demo-login-desktop.png) · [Login móvel](docs/screenshots/demo-login-mobile.png) · [Consulta de visitante](docs/screenshots/demo-visitor-desktop.png) · [Visitante móvel](docs/screenshots/demo-visitor-mobile.png)
 
 ## Executar em poucos minutos
 
@@ -28,16 +30,17 @@ Requisitos de desenvolvimento: **JDK 17+ e Maven 3.6.3+**. Node é necessário s
 git clone https://github.com/Gmerick/java-servicehub.git
 cd java-servicehub
 mvn clean verify
-java -jar target/app.jar
+python scripts/create_admin.py target/app.jar /caminho/privado/admin.secrets.properties
+java -jar target/app.jar --spring.profiles.active=demo --spring.config.additional-location=file:/caminho/privado/admin.secrets.properties
 ```
 
-Abra **http://localhost:8083**. O primeiro início cria dados de demonstração. Feche com `Ctrl+C`. No Windows, você também pode executar `INICIAR-DESENVOLVIMENTO.cmd` na pasta do projeto.
+Substitua o caminho por uma pasta privada fora do repositório; o gerador pede a senha no terminal e exige Python 3 + JDK 17. Abra **http://localhost:8083** e escolha visitante ou entre como ADMIN. O perfil `demo` cria dados fictícios em `data-demo`, separados do banco `data` existente. Sem esse perfil, não há visitante nem carga fictícia. Feche com `Ctrl+C`. No Windows, `INICIAR-DESENVOLVIMENTO.cmd` usa o perfil padrão e exige a variável `SERVICEHUB_ADMIN_FILE` apontando para o arquivo privado. Nunca configure senhas em arquivos Git.
 
-**Pacote pronto:** em [Actions → CI](https://github.com/Gmerick/java-servicehub/actions/workflows/ci.yml), abra uma execução verde e baixe o artefato `ServiceHub-Windows` (requer login no GitHub). Extraia o artefato, depois `ServiceHub-1.1.0.zip`; abra a pasta `ServiceHub` e execute `INICIAR.cmd`. É necessário Java 17+ no PATH; Maven e Node não são necessários para esse pacote. As [Releases](https://github.com/Gmerick/java-servicehub/releases) permitem disponibilizar a mesma distribuição por uma execução manual validada.
+**Pacote pronto:** em [Actions → CI](https://github.com/Gmerick/java-servicehub/actions/workflows/ci.yml), baixe `ServiceHub-Windows` de uma execução verde e extraia o ZIP interno da versão Maven. Siga COMO-USAR.md para criar as credenciais externas antes de executar `INICIAR.cmd`. A execução requer Java17; a geração local inicial do hash requer JDK17 e Python3. Maven e Node não são necessários no pacote. Releases continuam sendo manuais.
 
 ## Demonstração em 5 minutos
 
-1. Explore o painel e abra **Ordens de serviço**.
+1. Entre como ADMIN para demonstrar operações, ou como visitante para consultar. Explore o painel e abra **Ordens de serviço**.
 2. Abra a ordem de upgrade, confira peça + mão de obra e o total.
 3. Selecione **Aprovada**, escreva uma observação e confirme; confira a redução do SSD em estoque.
 4. Retorne à ordem, avance para **Em execução** e depois **Concluída**, registrando a resolução.
@@ -60,6 +63,9 @@ python scripts/check_persistence.py
 ```
 
 ## Documentação
+
+- [Autenticação, demonstração separada e plano de publicação HTTPS](docs/PUBLIC-DEMO.md)
+- [Evidências e limites da validação 1.2.0](docs/PUBLIC-DEMO-VALIDACAO.md)
 
 - [Implantação de desenvolvimento na AWS, túnel SSH e operação do H2](docs/AWS.md)
 - [Como usar, instalar, fazer backup e resolver problemas](docs/COMO-USAR.md)

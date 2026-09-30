@@ -1267,3 +1267,12 @@ button.secondary:hover {
     display: none;
   }
 }
+
+/* Auth screens reuse the existing ice-blue, lilac and cyan palette. */
+[hidden] { display:none !important; }
+.login-layout { max-width:1100px; min-height:100vh; margin:auto; padding:64px 32px; display:grid; grid-template-columns:1.1fr 1fr; gap:80px; align-items:center; }
+.login-intro .brand { margin-bottom:72px; }.login-intro h1 { font-size:clamp(38px,5vw,64px); line-height:1.12; letter-spacing:-.05em; margin:18px 0; }.login-intro p { color:var(--muted); max-width:360px; }
+.login-art { margin-top:42px; display:flex; gap:10px; flex-wrap:wrap; }.login-art span { font:11px var(--mono); padding:18px 14px; border:1px solid var(--line); border-radius:18px; background:var(--cyan); }.login-art span:nth-child(2){background:var(--lilac);}.login-art span:nth-child(3){background:#e2ebfa;}
+.login-card { background:#ffffffd9; border:1px solid var(--line); border-radius:28px; padding:36px; box-shadow:0 24px 70px #2534500b; }.login-card h2 { font-size:27px; letter-spacing:-.03em; margin:12px 0; }.login-card p{color:var(--muted);}.login-card form{display:grid;gap:18px;margin:28px 0 14px;}.login-card label{display:grid;gap:7px;}.login-card button{width:100%;min-height:46px;}.login-divider{text-align:center;font:10px var(--mono);color:var(--muted);margin:26px 0 18px;}.login-note{font-size:12px;line-height:1.7;text-align:center;}.login-card [role=alert]{padding:12px;border-radius:10px;background:#fff0ee;color:#923f36;}.login-card [role=status]{font-size:12px;text-align:center;min-height:20px;}
+.demo-banner { background:linear-gradient(110deg,#e4ddf8,#d9f5f5);border-bottom:1px solid var(--line);padding:12px 24px;color:var(--ink);font-size:13px; }.demo-banner small{display:block;color:var(--muted);}.session-label{font-size:12px;color:var(--muted);}.header-right{flex-wrap:wrap;}
+@media(max-width:760px){.login-layout{grid-template-columns:1fr;gap:30px;padding:28px 20px;}.login-intro .brand{margin-bottom:30px;}.login-intro h1{font-size:36px;}.login-art{display:none;}.login-card{padding:26px 22px;}.demo-banner{padding:12px 20px;}.header-right .local-tag{display:none;}}

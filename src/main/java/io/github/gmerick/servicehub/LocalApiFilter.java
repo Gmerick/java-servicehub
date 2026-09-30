@@ -6,10 +6,15 @@ import java.io.IOException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-/** A aplicação não tem autenticação: execução local e bloqueio de mutações cross-site. */
+/** Defense in depth: CSP and rejection of cross-site API mutations. */
 @Component
+@org.springframework.core.annotation.Order(org.springframework.core.Ordered.HIGHEST_PRECEDENCE + 10)
 public class LocalApiFilter extends OncePerRequestFilter {
+    @org.springframework.beans.factory.annotation.Value("${app.require-https:false}") boolean requireHttps;
     @Override protected void doFilterInternal(HttpServletRequest req,HttpServletResponse res,FilterChain chain) throws ServletException,IOException {
+        if(requireHttps && !req.isSecure() && !req.getRequestURI().equals("/api/health")) {
+            SecurityConfig.message(res,403,"Use o endereço HTTPS da demonstração.");return;
+        }
         res.setHeader("X-Content-Type-Options","nosniff");
         res.setHeader("Content-Security-Policy","default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
         if(req.getRequestURI().startsWith("/api")) {

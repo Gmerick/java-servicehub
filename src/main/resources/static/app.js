@@ -38,6 +38,7 @@ const titles = {
   parts: "Peças e estoque",
   guide: "Guia de uso",
 };
+let admin = false, csrfToken = null;
 let view = "dashboard",
   currentPage = 0,
   search = "",
@@ -53,9 +54,10 @@ const badge = (v) =>
 async function api(path, method = "GET", body) {
   const res = await fetch("/api" + path, {
     method,
-    headers: body ? { "Content-Type": "application/json" } : {},
+    headers: { ...(body ? { "Content-Type": "application/json" } : {}), ...(method !== "GET" ? { [csrfToken.headerName]: csrfToken.token } : {}) },
     body: body ? JSON.stringify(body) : undefined,
   });
+  if (res.status === 401) { location.replace("/login.html?expired=1"); throw Error("Sessão encerrada."); }
   let data;
   try {
     data = await res.json();
@@ -86,7 +88,7 @@ function error(text) {
 const heading = (title, sub, action = "") =>
   `<div class="page-heading"><div><span class="eyebrow">SERVICEHUB / BANCADA</span><h1>${title}</h1><p>${sub}</p></div>${action}</div>`;
 const createButton = (type, title) =>
-  `<button class="primary" data-new="${type}">＋ ${title}</button>`;
+  admin ? `<button class="primary" data-new="${type}">＋ ${title}</button>` : "";
 const table = (headers, rows) =>
   `<div class="table-wrap"><table><thead><tr>${headers.map((x) => `<th>${x}</th>`).join("")}</tr></thead><tbody>${rows || `<tr><td colspan="${headers.length}" class="empty">Nenhum registro encontrado. Cadastre o primeiro ou ajuste os filtros.</td></tr>`}</tbody></table></div>`;
 function orderRows(rows) {
@@ -126,7 +128,7 @@ async function render() {
             <div class="desk-summary"><div><span class="summary-number">${d.completed}</span><span>serviços<br>concluídos</span></div><div><span class="summary-money">${money(d.completedValue)}</span><span>em orçamentos concluídos<small>Não representa recebimentos.</small></span></div></div>
           </section>
           <aside class="desk-rail"><section class="stock-panel"><div class="rail-caption"><span class="eyebrow">02 / ESTOQUE</span><span aria-hidden="true">↗</span></div><div class="stock-number">${String(d.lowStock).padStart(2, "0")}<span>peça(s) para<br>acompanhar</span></div><p>${d.lowStock ? "Itens no estoque mínimo ou abaixo dele. Confira antes de aprovar um orçamento." : "As peças estão acima do mínimo. Você pode consultar o saldo no catálogo."}</p><button class="secondary" data-view="parts">Conferir estoque <span aria-hidden="true">→</span></button><div class="stock-track" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></section>
-          <section class="shortcuts"><span class="eyebrow">ATALHOS DA BANCADA</span><button data-new="customer"><span>Novo cliente<small>O primeiro contato</small></span><span aria-hidden="true">＋</span></button><button data-new="asset"><span>Novo equipamento<small>Vincular ao cliente</small></span><span aria-hidden="true">＋</span></button><button data-view="guide"><span>Como funciona<small>Da entrada à entrega</small></span><span aria-hidden="true">↗</span></button></section><p class="rail-footnote"><span class="status-dot"></span>Salvo no seu computador.<br><span>Seu ritmo. Seu espaço de trabalho.</span></p></aside>
+          <section class="shortcuts"><span class="eyebrow">ATALHOS DA BANCADA</span><button data-new="customer"><span>Novo cliente<small>O primeiro contato</small></span><span aria-hidden="true">＋</span></button><button data-new="asset"><span>Novo equipamento<small>Vincular ao cliente</small></span><span aria-hidden="true">＋</span></button><button data-view="guide"><span>Como funciona<small>Da entrada à entrega</small></span><span aria-hidden="true">↗</span></button></section><p class="rail-footnote"><span class="status-dot"></span>Dados protegidos no servidor.<br><span>Seu ritmo. Seu espaço de trabalho.</span></p></aside>
         </div>`;
     } else if (view === "orders") {
       const d = await api(
@@ -182,8 +184,8 @@ async function render() {
           "Seu guia de uso",
           "Um fluxo simples para demonstrar o projeto com confiança.",
         ) +
-        `<div class="help-content"><section class="card"><h2>Comece em cinco passos</h2><ol><li>Em <b>Clientes</b>, cadastre nome, e-mail e telefone.</li><li>Em <b>Equipamentos</b>, vincule um equipamento ao cliente.</li><li>Em <b>Ordens de serviço</b>, abra uma ordem com prazo e prioridade.</li><li>Abra a ordem e inclua <b>serviços e peças</b> no orçamento. As peças usam o preço do catálogo.</li><li><b>Aprove → Inicie → Conclua</b>, registrando uma observação em cada etapa.</li></ol></section><section class="card"><h2>Regras que protegem a operação</h2><p>Somente rascunhos permitem alterar itens. Aprovar exige ao menos um item e estoque suficiente para todas as peças. Se faltar uma peça, nada é retirado. Ordens concluídas e canceladas ficam somente para consulta.</p><p>O painel mostra o valor dos orçamentos concluídos, sem representar recebimentos. O CSV exporta todas as ordens.</p></section><section class="card"><h2>Dados locais e demonstração</h2><p>Os dados são salvos na pasta <code>data</code>. Para fazer backup, encerre a aplicação e copie a pasta inteira. Os exemplos são fictícios e são criados apenas se não houver clientes na inicialização.</p><p>Esta versão é de estudo e uso local, sem login. Não publique o servidor na internet. Código, API e roteiro de apresentação estão no README e na pasta <code>docs</code> do repositório.</p></section></div>`;
-    if (version === renderVersion) $("#page").innerHTML = html;
+        `<div class="help-content"><section class="card"><h2>Comece em cinco passos</h2><ol><li>Em <b>Clientes</b>, cadastre nome, e-mail e telefone.</li><li>Em <b>Equipamentos</b>, vincule um equipamento ao cliente.</li><li>Em <b>Ordens de serviço</b>, abra uma ordem com prazo e prioridade.</li><li>Abra a ordem e inclua <b>serviços e peças</b> no orçamento. As peças usam o preço do catálogo.</li><li><b>Aprove → Inicie → Conclua</b>, registrando uma observação em cada etapa.</li></ol></section><section class="card"><h2>Regras que protegem a operação</h2><p>Somente rascunhos permitem alterar itens. Aprovar exige ao menos um item e estoque suficiente para todas as peças. Se faltar uma peça, nada é retirado. Ordens concluídas e canceladas ficam somente para consulta.</p><p>O painel mostra o valor dos orçamentos concluídos, sem representar recebimentos. O CSV exporta todas as ordens.</p></section><section class="card"><h2>Acesso e demonstração</h2><p>A demonstração usa somente dados fictícios. Visitantes podem consultar painéis, cadastros, estoque e históricos. Cadastros e alterações exigem acesso administrativo.</p><p>Use Sair para encerrar sua sessão. Se o acesso expirar, entre novamente. Não informe dados pessoais reais na demonstração. O roteiro de apresentação e as instruções de operação estão na documentação do projeto.</p></section></div>`;
+    if (version === renderVersion) { $("#page").innerHTML = html; applyRole(); }
   } catch (e) {
     if (version === renderVersion) {
       $("#page").innerHTML =
@@ -210,6 +212,7 @@ const options = (items, label) =>
 const select = (label, name, opts) =>
   `<label>${label}<select name="${name}" required><option value="">Selecione</option>${opts}</select></label>`;
 async function newForm(type, id) {
+  if (!admin) return;
   await referenceData();
   let fields = "",
     title = "";
@@ -307,8 +310,8 @@ async function showOrder(id) {
   await referenceData();
   selected = await api("/orders/" + id);
   const o = selected.order;
-  const draft = o.status === "DRAFT";
-  const actions =
+  const draft = admin && o.status === "DRAFT";
+  const actions = !admin ? [] :
     {
       DRAFT: ["APPROVED", "CANCELED"],
       APPROVED: ["IN_PROGRESS", "CANCELED"],
@@ -317,10 +320,11 @@ async function showOrder(id) {
   openDialog(
     `#${String(id).padStart(4, "0")} · ${o.title}`,
     o.customerName + " / " + o.assetName,
-    `<div class="detail-meta">${badge(o.status)}${badge(o.priority)}<span>Prazo: ${date(o.dueDate)}</span></div><p class="wrap">${esc(o.description)}</p><section class="detail-section"><h3>Orçamento</h3>${table(["Item", "Qtd.", "Unitário", "Total", ""], selected.items.map((i) => `<tr><td class="wrap">${esc(i.description)}<small>${i.partId ? "Peça do catálogo" : "Serviço"}</small></td><td>${i.quantity}</td><td class="nowrap">${money(i.unitPrice)}</td><td class="nowrap">${money(i.total)}</td><td>${draft ? `<button class="text-button" data-remove-item="${i.id}" aria-label="Remover item ${i.id}">Remover</button>` : ""}</td></tr>`).join(""))}<div class="total"><span>Total do orçamento</span><b>${money(o.total)}</b></div></section>${draft ? `<section class="detail-section"><h3>Adicionar item</h3><form data-form="item" data-id="${id}"><div class="form-grid"><label>Tipo de item<select name="partId" id="item-part"><option value="">Serviço / mão de obra</option>${options(parts, (p) => p.name + " · " + money(p.price) + " · " + p.stock + " un.")}</select></label>${input("Descrição do serviço", "description", "text", 'maxlength="160"')}${input("Quantidade", "quantity", "number", 'value="1" min="1" max="1000" step="1"')}${input("Valor unitário (R$)", "unitPrice", "number", 'min="0" max="9999999.99" step="0.01"')}</div><div class="form-actions"><button class="secondary" type="submit">Adicionar ao orçamento</button></div></form></section>` : ""}${actions.length ? `<section class="detail-section"><h3>Próxima etapa</h3><form data-form="transition" data-id="${id}"><div class="form-grid">${select("Novo status", "status", actions.map((a) => `<option value="${a}">${labels[a]}</option>`).join(""))}<label>Observação / resolução<textarea name="note" required maxlength="2000" placeholder="Registre a aprovação, o início, a resolução ou o motivo do cancelamento"></textarea></label></div><p><small>Aprovar retira as peças do estoque. Cancelar devolve as peças de ordens já aprovadas.</small></p><div class="form-actions"><button class="primary" type="submit">Confirmar etapa</button></div></form></section>` : `<section class="detail-section"><h3>Encerramento</h3><p class="wrap">${esc(o.resolution || "Ordem cancelada. Consulte o histórico para ver o motivo.")}</p></section>`}<section class="detail-section"><h3>Histórico da ordem</h3><ul class="timeline">${selected.events.map((e) => `<li>${esc(e.message)}<small>${date(e.createdAt)} · ${esc(e.createdAt.slice(11, 16))}</small></li>`).join("")}</ul></section>`,
+    `<div class="detail-meta">${badge(o.status)}${badge(o.priority)}<span>Prazo: ${date(o.dueDate)}</span></div><p class="wrap">${esc(o.description)}</p><section class="detail-section"><h3>Orçamento</h3>${table(["Item", "Qtd.", "Unitário", "Total", ""], selected.items.map((i) => `<tr><td class="wrap">${esc(i.description)}<small>${i.partId ? "Peça do catálogo" : "Serviço"}</small></td><td>${i.quantity}</td><td class="nowrap">${money(i.unitPrice)}</td><td class="nowrap">${money(i.total)}</td><td>${draft ? `<button class="text-button" data-remove-item="${i.id}" aria-label="Remover item ${i.id}">Remover</button>` : ""}</td></tr>`).join(""))}<div class="total"><span>Total do orçamento</span><b>${money(o.total)}</b></div></section>${draft ? `<section class="detail-section"><h3>Adicionar item</h3><form data-form="item" data-id="${id}"><div class="form-grid"><label>Tipo de item<select name="partId" id="item-part"><option value="">Serviço / mão de obra</option>${options(parts, (p) => p.name + " · " + money(p.price) + " · " + p.stock + " un.")}</select></label>${input("Descrição do serviço", "description", "text", 'maxlength="160"')}${input("Quantidade", "quantity", "number", 'value="1" min="1" max="1000" step="1"')}${input("Valor unitário (R$)", "unitPrice", "number", 'min="0" max="9999999.99" step="0.01"')}</div><div class="form-actions"><button class="secondary" type="submit">Adicionar ao orçamento</button></div></form></section>` : ""}${actions.length ? `<section class="detail-section"><h3>Próxima etapa</h3><form data-form="transition" data-id="${id}"><div class="form-grid">${select("Novo status", "status", actions.map((a) => `<option value="${a}">${labels[a]}</option>`).join(""))}<label>Observação / resolução<textarea name="note" required maxlength="2000" placeholder="Registre a aprovação, o início, a resolução ou o motivo do cancelamento"></textarea></label></div><p><small>Aprovar retira as peças do estoque. Cancelar devolve as peças de ordens já aprovadas.</small></p><div class="form-actions"><button class="primary" type="submit">Confirmar etapa</button></div></form></section>` : `<section class="detail-section"><h3>${admin ? "Encerramento" : "Modo de consulta"}</h3><p class="wrap">${esc(o.resolution || (admin ? "Ordem cancelada. Consulte o histórico para ver o motivo." : "Alterações de orçamento e etapas exigem administração."))}</p></section>`}<section class="detail-section"><h3>Histórico da ordem</h3><ul class="timeline">${selected.events.map((e) => `<li>${esc(e.message)}<small>${date(e.createdAt)} · ${esc(e.createdAt.slice(11, 16))}</small></li>`).join("")}</ul></section>`,
   );
 }
 async function submitForm(form) {
+  if (!admin) return;
   const data = Object.fromEntries(new FormData(form));
   const type = form.dataset.form,
     id = form.dataset.id;
@@ -453,4 +457,27 @@ document.addEventListener("click", async (e) => {
     b.disabled = false;
   }
 });
-render();
+function applyRole() {
+  if(!admin) document.querySelectorAll('[data-new],[data-restock],[data-remove-item],form[data-form]').forEach(el=>el.remove());
+}
+async function initialize() {
+  try {
+    const session=await api('/session');
+    admin=session.admin;
+    csrfToken=await api('/csrf');
+    $('#session-label').textContent=admin?'Administração':'Visitante · somente consulta';
+    $('#demo-banner').hidden=!session.demo;
+    $('#demo-role').textContent=admin?'Acesso administrativo. Use somente informações fictícias.':'Você pode consultar todos os recursos. Cadastros e alterações exigem administração.';
+    await render();
+  } catch(e) {error(e.message);}
+}
+$('#logout').onclick=async()=>{
+  $('#logout').disabled=true;
+  try {
+    csrfToken=await api('/csrf');
+    const response=await fetch('/logout',{method:'POST',headers:{[csrfToken.headerName]:csrfToken.token}});
+    if(!response.ok)throw Error('Não foi possível encerrar a sessão. Atualize e tente novamente.');
+    $('#page').replaceChildren();location.replace('/login.html');
+  }catch(e){error(e.message);$('#logout').disabled=false;}
+};
+initialize();
