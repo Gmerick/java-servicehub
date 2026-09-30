@@ -1,6 +1,6 @@
 # Demonstração pública 1.2.0 — preparação, ainda sem publicação
 
-A implantação privada em Ohio permanece na versão anterior, por túnel SSH. Esta entrega não atualiza a EC2, não muda o Free Plan e não abre portas. O domínio ainda será escolhido pelo proprietário. Não há domínio, senha administrativa ou endereço público padrão no código.
+A implantação privada em Ohio permanece na versão anterior, por túnel SSH. Esta entrega não atualiza a EC2, não muda o Free Plan e não abre portas. O proprietário escolheu `servicehub.leadopssender.com.br`; seu registro DNS foi criado, conforme [DNS-PUBLIC-DEMO.md](DNS-PUBLIC-DEMO.md). O domínio fica em configuração externa, sem senha administrativa ou endereço EC2 padrão no código.
 
 ## Acesso e permissões
 
@@ -30,11 +30,11 @@ Abra `http://localhost:18085`. O perfil `demo` grava em `./data-demo/servicehub.
 
 ## Plano para aprovação antes da publicação
 
-O proprietário deve informar um domínio/subdomínio já controlado e confirmar a configuração final abaixo após substituir os parâmetros. Não comprar domínio nem ativar plano pago.
+O domínio escolhido é `servicehub.leadopssender.com.br`. A autorização recebida cobre apenas DNS e preparação: a configuração final de rede e o corte abaixo ainda precisam de aprovação. Não comprar domínio nem ativar plano pago. O modelo `deploy/public-demo/servicehub.env.example` define DEMO_DOMAIN; ACME_EMAIL será confirmado e definido externamente antes da publicação.
 
 | Item | Configuração proposta, não aplicada nesta entrega |
 |---|---|
-| DNS | Registro A do subdomínio escolhido para o IPv4 **atual** da EC2 existente em us-east-2; conferir o IP antes de salvar. Sem AAAA enquanto não houver IPv6 configurado |
+| DNS | Já criado: servicehub.leadopssender.com.br, A, TTL 300, destino 18.224.63.142 confirmado no console em 30/09/2026. Conferir novamente o IP antes do corte; sem AAAA |
 | EC2 | Mesma servicehub-dev, t3.micro, CPU Standard, EBS existente, sem infraestrutura adicional |
 | Security Group | TCP 22 somente do IP público atual do proprietário /32; TCP 80 e 443 públicos somente no corte aprovado; nenhuma regra para 8083 ou 2019 |
 | Java | 127.0.0.1:8083, usuário servicehub-demo sem privilégios, banco /var/lib/servicehub-demo/servicehub.mv.db |
