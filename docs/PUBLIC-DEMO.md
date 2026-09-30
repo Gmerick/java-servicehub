@@ -1,6 +1,6 @@
-# Demonstração pública 1.2.0 — preparação, ainda sem publicação
+# Demonstração pública 1.2.0 — implantação e operação
 
-A implantação privada em Ohio permanece na versão anterior, por túnel SSH. Esta entrega não atualiza a EC2, não muda o Free Plan e não abre portas. O proprietário escolheu `servicehub.leadopssender.com.br`; seu registro DNS foi criado, conforme [DNS-PUBLIC-DEMO.md](DNS-PUBLIC-DEMO.md). O domínio fica em configuração externa, sem senha administrativa ou endereço EC2 padrão no código.
+Publicado em **https://servicehub.leadopssender.com.br** em 30/09/2026. Use **Explorar como visitante** para consultas sem senha. A instalação privada 1.1.0 está parada/desabilitada, com JAR, configuração e banco preservados para recuperação. [Evidências e checksums](PUBLICACAO-2026-09-30.md).
 
 ## Acesso e permissões
 
@@ -28,11 +28,11 @@ java -jar target/app.jar --spring.profiles.active=demo "--spring.config.addition
 
 Abra `http://localhost:18085`. O perfil `demo` grava em `./data-demo/servicehub.mv.db`; não usa `./data`. O perfil padrão mantém `./data`, não cria dados demonstrativos e exige credenciais. As variáveis externas ADMIN_USERNAME/ADMIN_PASSWORD_HASH também são suportadas, mas o arquivo evita expor o hash no histórico. A aplicação falha ao iniciar sem credenciais válidas. O arquivo aleatório `target/test-auth.json` é exclusivo dos testes e não é distribuído nem uma credencial de produção.
 
-## Plano para aprovação antes da publicação
+## Configuração aplicada
 
-O domínio escolhido é `servicehub.leadopssender.com.br`. A autorização recebida cobre apenas DNS e preparação: a configuração final de rede e o corte abaixo ainda precisam de aprovação. Não comprar domínio nem ativar plano pago. O modelo `deploy/public-demo/servicehub.env.example` define DEMO_DOMAIN; ACME_EMAIL será confirmado e definido externamente antes da publicação.
+O proprietário autorizou domínio, corte e rede. O contato ACME foi definido externamente em `/etc/caddy/servicehub.env`. O Free Plan foi mantido.
 
-| Item | Configuração proposta, não aplicada nesta entrega |
+| Item | Configuração efetiva |
 |---|---|
 | DNS | Já criado: servicehub.leadopssender.com.br, A, TTL 300, destino 18.224.63.142 confirmado no console em 30/09/2026. Conferir novamente o IP antes do corte; sem AAAA |
 | EC2 | Mesma servicehub-dev, t3.micro, CPU Standard, EBS existente, sem infraestrutura adicional |
@@ -43,7 +43,7 @@ O domínio escolhido é `servicehub.leadopssender.com.br`. A autorização receb
 
 O IPv4 pode mudar após parar/iniciar a EC2: atualizar DNS nessa situação. Não alocar Elastic IP nesta entrega. Caddy no mesmo host não cria um serviço AWS adicional, mas tráfego público e uso de CPU podem aumentar consumo dos créditos. O orçamento de US$ 10 continua sendo alerta, não um limitador. Conferir plano, saldo e estimativa antes da publicação; não prometer gratuidade permanente.
 
-## Procedimento futuro de corte (não executado)
+## Procedimento de corte e repetição
 
 1. Obter aprovação do domínio, DNS/rede e janela de manutenção. Baixar o artefato **ServiceHub-EC2** de uma CI aprovada, verificar SHA256. Não compilar na EC2. Confirmar espaço livre para JAR, banco e backups.
 2. Criar backup frio do serviço privado com `sudo servicehub-backup`, validar o arquivo `.sha256` e copiar o backup para armazenamento privado fora da EC2, já disponível ao proprietário. Registrar contagens/hash lógico pela API privada antes de parar. Não enviar dados ou backup ao Git/artefatos da CI.
@@ -74,7 +74,7 @@ Para navegador, resolver temporariamente DOMINIO para127.0.0.1 no computador e a
 
 ## Atualização, backup e recuperação
 
-Todos os comandos abaixo são futuros, após o corte. Nenhum deles altera o banco privado quando selecionado `demo`:
+Os comandos abaixo operam a instalação publicada. Nenhum deles altera o banco privado quando selecionado `demo`:
 
 ```bash
 sudo SERVICEHUB_INSTANCE=demo servicehub-backup

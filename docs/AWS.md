@@ -1,5 +1,7 @@
 # ServiceHub de desenvolvimento na EC2
 
+> Registro histórico. Para o estado publicado em 30/09/2026, consulte [PUBLICACAO-2026-09-30.md](PUBLICACAO-2026-09-30.md). O serviço privado está preservado e desabilitado; a demonstração usa Caddy HTTPS e banco separado.
+
 > Histórico da implantação privada 1.1.0. Para a preparação 1.2.0 com autenticação e banco demonstrativo separado, siga [PUBLIC-DEMO.md](PUBLIC-DEMO.md). Não houve deploy neste PR; não atualizar o JAR antigo sem preparar credenciais externas. O perfil público não aceita HTTP pelo túnel8083.
 
 Uma EC2, Java 17, H2 em arquivo e acesso por túnel SSH. Sem autenticação: **nunca abra 8083, 80 ou 443 no security group**. O serviço força `127.0.0.1:8083`. A interface permanece a mesma.
